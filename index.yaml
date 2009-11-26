@@ -10,3 +10,15 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
+- kind: Signin
+  properties:
+  - name: active
+  - name: type
+  - name: created
+    direction: desc
+
+- kind: Signin
+  properties:
+  - name: type
+  - name: created
+    direction: desc
