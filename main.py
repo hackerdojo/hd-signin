@@ -11,8 +11,10 @@ from google.appengine.api import urlfetch
 from google.appengine.api import mail
 from google.appengine.ext.webapp.util import login_required
 from datetime import datetime
-import urllib, hashlib, time
+import urllib, hashlib, time, random
 from django.utils import simplejson
+
+GREETINGS = ['hello', 'hi', 'ahoy', 'welcome', 'greetings', 'howdy']
 
 PBWORKS_TOKEN = None
 def get_token(refresh=False):
@@ -60,20 +62,37 @@ class MainHandler(webapp.RequestHandler):
 			email = '%s@hackerdojo.com' % email
 		if email:
 			hash=hashlib.md5(email).hexdigest()
-			response = urlfetch.fetch('https://dojo.pbworks.com/api_v2/op/GetUserInfo/_type/jsontext/email/%s/token/%s' % (urllib.quote(email), get_token())).content
-			if not 'appenginebot' in response:
-				response = parse_json(response)
-				image = response['image']
-				name = response['name']
+			
+			# Defaults
+			image = 'http://0.gravatar.com/avatar/%s' % hash
+			name = email.split('@')[0].replace('.', ' ')
+			say = '%s, %s' % (random.choice(GREETINGS), name.split(' ')[0])
+			text = "Welcome back to Hacker Dojo, %s!" % name.split(' ')[0]
+			
+			# If on staff
+			if '@hackerdojo.com' in email:
+				response = urlfetch.fetch('http://dojo.pbworks.com/api_v2/op/GetUserInfo/_type/jsontext/email/%s/token/%s' % (urllib.quote(email), get_token())).content
+				if not 'appenginebot' in response:
+					response = parse_json(response)
+					image = response['image']
+					name = response['name']
+					say = "Staff member, %s" % name
+					text = "Welcome back, %s. Remember to check out when you leave!" % name.split(' ')[0]	
 			else:
-				image = 'http://0.gravatar.com/avatar/%s' % hash
-				name = None
+				# TODO: contact signup app
+				# if member
+				#   say = "member" + name
+				# else...
+				
+				# If new visitor
+				s = Signin.all().filter('email =', email).get()
+				if not s:
+					say = "Welcome to Hacker Dojo!"
+					text = "Congrats on your first visit, %s!" % name
+			
 			s = Signin(email=email, type=self.request.get('type'), image_url=image, name=name)
 			s.put()
-			if name:
-				broadcast(cmd='say', text='Welcome back, %s' % s.name_or_nick().split(' ')[0])
-			else:
-				broadcast(cmd='say', text='Welcome to Hacker Dojo!')
+			broadcast(text=text, say=say)
 		self.redirect('/')
 
 class StaffHandler(webapp.RequestHandler):
@@ -92,10 +111,25 @@ class TokenHandler(webapp.RequestHandler):
 		get_token(True)
 		self.response.out.write("ok")
 
+class OpenHandler(webapp.RequestHandler):
+	def get(self):
+		staff = Signin.get_active_staff()
+		count = staff.count(1000)
+		if count > 0:
+			staff = [s.name_or_nick().split(' ')[0] for s in staff.fetch(1000)]
+			if count > 1:
+				last_staff = staff.pop()
+				self.response.out.write("Hacker Dojo is currently open, staffed by %s and %s." % (', '.join(staff), last_staff))
+			else:
+				self.response.out.write("Hacker Dojo is currently open, staffed by our hero, %s." % staff[0])
+		else:
+			self.response.out.write("Hacker Dojo is unfortunately closed.")
+
 def main():
     application = webapp.WSGIApplication([
         ('/', MainHandler), 
 		('/staff', StaffHandler),
+		('/open', OpenHandler),
 		('/refreshtoken', TokenHandler),
         ], debug=True)
     wsgiref.handlers.CGIHandler().run(application)

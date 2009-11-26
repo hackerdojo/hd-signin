@@ -13,12 +13,14 @@ indexes:
 - kind: Signin
   properties:
   - name: active
+  - name: email
   - name: type
   - name: created
     direction: desc
 
 - kind: Signin
   properties:
+  - name: active
   - name: type
   - name: created
     direction: desc
