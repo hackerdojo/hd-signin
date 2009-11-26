@@ -70,7 +70,10 @@ class MainHandler(webapp.RequestHandler):
 				name = None
 			s = Signin(email=email, type=self.request.get('type'), image_url=image, name=name)
 			s.put()
-			broadcast(cmd='say', text='Welcome back, %s' % s.name_or_nick().split(' ')[0])
+			if name:
+				broadcast(cmd='say', text='Welcome back, %s' % s.name_or_nick().split(' ')[0])
+			else:
+				broadcast(cmd='say', text='Welcome to Hacker Dojo!')
 		self.redirect('/')
 
 class StaffHandler(webapp.RequestHandler):
