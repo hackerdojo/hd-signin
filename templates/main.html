@@ -6,7 +6,12 @@
 function stopRKey(evt) { 
   var evt = (evt) ? evt : ((event) ? event : null); 
   var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null); 
+  var em = document.getElementById("em").value;
   if ((evt.keyCode == 13) && (node.type=="text"))  {return false;} 
+
+  if (evt.keyCode==9 && em.length>0 && em.indexOf("@")==-1) {
+     document.getElementById("em").value = em+"@hackerdojo.com";
+  }
   if (evt.keyCode==45 || evt.keyCode==18) {
     showStaffButtons();
   }
