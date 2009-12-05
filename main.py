@@ -106,6 +106,12 @@ class StaffHandler(webapp.RequestHandler):
 			Signin.deactivate_staffer(email)
 		self.redirect('/staff')
 
+class MiniStaffHandler(webapp.RequestHandler):
+	def get(self):
+		staff = Signin.get_active_staff()
+		isopen = staff.count() > 0
+		self.response.out.write(template.render('templates/ministaff.html', locals()))
+
 class TokenHandler(webapp.RequestHandler):
 	def get(self):
 		get_token(True)
@@ -128,6 +134,7 @@ class OpenHandler(webapp.RequestHandler):
 def main():
     application = webapp.WSGIApplication([
         ('/', MainHandler), 
+		('/ministaff', MiniStaffHandler),
 		('/staff', StaffHandler),
 		('/open', OpenHandler),
 		('/refreshtoken', TokenHandler),

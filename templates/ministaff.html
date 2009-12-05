@@ -1,0 +1,42 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="http://dustball.com/dojo/kiosk.css" />
+<script type="text/javascript">
+</script>
+</head>
+<body>
+
+
+
+{% if isopen %}
+
+  <p class="openline"><b>The Dojo is open.</b>  Current staff:</p>
+  
+  <table align="center" class="ministaff">
+  
+  {% for staffer in staff %}  
+  
+    <tr><td>
+      <div class="picbox">
+        <img class="pic" width=24 height=24 src="{{ staffer.image_url }}" /> 
+      </div>
+    </td>
+    <td>  
+      <span class="name">{{ staffer.name_or_nick }}</span> -
+      <span class="ago">{{ staffer.created|timesince }} ago</span>
+    </td>
+    </tr>
+  
+  {% endfor %}
+  
+  </table>
+
+{% else %}
+
+  <p class="closeline">The Dojo is currently closed.</p>
+
+{% endif %}
+
+
+</body>
+</html>
