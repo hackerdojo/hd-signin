@@ -70,7 +70,7 @@ class MainHandler(webapp.RequestHandler):
 			text = "Welcome back to Hacker Dojo, %s!" % name.split(' ')[0]
 			
 			# If on staff
-			if '@hackerdojo.com' in email:
+			if 'Staff' in self.request.get('type'):
 				response = urlfetch.fetch('http://dojo.pbworks.com/api_v2/op/GetUserInfo/_type/jsontext/email/%s/token/%s' % (urllib.quote(email), get_token())).content
 				if not 'appenginebot' in response:
 					response = parse_json(response)
