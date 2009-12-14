@@ -131,6 +131,26 @@ class OpenHandler(webapp.RequestHandler):
 		else:
 			self.response.out.write("Hacker Dojo is unfortunately closed.")
 
+class JSONHandler(webapp.RequestHandler):
+	def get(self):
+		staff = Signin.get_active_staff()
+		count = staff.count(1000)
+		dictList = list()
+		
+		for staffmember in staff.fetch(1000):
+			staffDict = dict()
+			staffDict['name'] = staffmember.name_or_nick()
+			staffDict['email'] = staffmember.email
+			staffDict['image_url'] = staffmember.image_url
+			staffDict['type'] = staffmember.type
+			staffDict['created'] = staffmember.created.strftime("%m-%d-%Y %H:%M:%S")
+			now = datetime.now()
+			staffDict['refTime'] = now.strftime("%m-%d-%Y %H:%M:%S")
+				
+			dictList = dictList + [staffDict]
+				
+		self.response.out.write(simplejson.dumps(dictList))
+
 def main():
     application = webapp.WSGIApplication([
         ('/', MainHandler), 
@@ -138,6 +158,7 @@ def main():
 		('/staff', StaffHandler),
 		('/open', OpenHandler),
 		('/refreshtoken', TokenHandler),
+                ('/staffjson', JSONHandler),
         ], debug=True)
     wsgiref.handlers.CGIHandler().run(application)
  
