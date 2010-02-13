@@ -9,8 +9,6 @@ inbound_services:
 handlers:
 - url: /static
   static_dir: static
-- url: /_ah/mail/there@.+ 
-  script: main.py
 - url: .*
   script: main.py
 
