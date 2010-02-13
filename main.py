@@ -189,10 +189,8 @@ class MailHandler(InboundMailHandler):
         count = staff.count(1000)
         if count > 0:
           staff = [s.email for s in staff.fetch(1000)]
-          #for s in cc:
           mail.send_mail(
               sender=mail_message.sender,
-              #to=s,
               to=(', '.join(staff)),
               subject="[there@] " + mail_message.subject,
               body=mail_message.body)
@@ -200,7 +198,7 @@ class MailHandler(InboundMailHandler):
           mail.send_mail(
             sender="there@hackerdojo.com",
             to=mail_message.sender,
-            subject="there@ error",
+            subject="there@ bounce message",
             body="Sorry, doesn't look like any staff is signed in")
 
 def main():
