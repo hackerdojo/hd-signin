@@ -3,8 +3,16 @@ version: 1
 runtime: python
 api_version: 1
 
+inbound_services:
+- mail
+  
 handlers:
 - url: /static
   static_dir: static
+- url: /_ah/mail/there@.+ 
+  script: there.py
 - url: .*
   script: main.py
+
+
+  
