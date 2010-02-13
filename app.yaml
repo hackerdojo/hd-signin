@@ -10,9 +10,8 @@ handlers:
 - url: /static
   static_dir: static
 - url: /_ah/mail/there@.+ 
-  script: there.py
+  script: main.py
 - url: .*
   script: main.py
 
 
-  

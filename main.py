@@ -13,6 +13,11 @@ from google.appengine.ext.webapp.util import login_required
 from datetime import datetime
 import urllib, hashlib, time, random
 from django.utils import simplejson
+import logging, email
+from google.appengine.ext import webapp 
+from google.appengine.ext.webapp.mail_handlers import InboundMailHandler 
+from google.appengine.ext.webapp.util import run_wsgi_app
+from google.appengine.api import mail
 
 GREETINGS = ['hello', 'hi', 'ahoy', 'welcome', 'greetings', 'howdy']
 
@@ -146,9 +151,31 @@ class JSONHandler(webapp.RequestHandler):
 		        
 		self.response.out.write(simplejson.dumps([to_dict(staffer) for staffer in staff]))
 
+class MailHandler(InboundMailHandler):
+    def receive(self, mail_message):
+        
+        staff = Signin.get_active_staff()
+        count = staff.count(1000)
+        if count > 0:
+          staff = [s.email for s in staff.fetch(1000)]
+          #for s in cc:
+          mail.send_mail(
+              sender=mail_message.sender,
+              #to=s,
+              to=(', '.join(staff)),
+              subject="[there@] " + mail_message.subject,
+              body=mail_message.body)
+        else:
+          mail.send_mail(
+            sender="there@hackerdojo.com",
+            to=mail_message.sender,
+            subject="there@ error",
+            body="Sorry, doesn't look like any staff is signed in")
+
 def main():
     application = webapp.WSGIApplication([
         ('/', MainHandler), 
+        (r'^/_ah/mail/there.*', MailHandler),
 		('/ministaff', MiniStaffHandler),
 		('/staff', StaffHandler),
 		('/open', OpenHandler),
