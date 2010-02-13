@@ -10,7 +10,7 @@ from google.appengine.ext import db
 from google.appengine.api import urlfetch
 from google.appengine.api import mail
 from google.appengine.ext.webapp.util import login_required
-from datetime import datetime
+from datetime import datetime, timedelta
 import urllib, hashlib, time, random
 from django.utils import simplejson
 import logging, email
@@ -42,6 +42,8 @@ class Signin(db.Model):
 	image_url = db.StringProperty()
 	type = db.StringProperty(required=True)
 	created = db.DateTimeProperty(auto_now_add=True)
+	closed = db.DateTimeProperty()
+	time_delta = db.IntegerProperty()
 	active = db.BooleanProperty(default=True)
 
 	@classmethod
@@ -52,6 +54,9 @@ class Signin(db.Model):
 	def deactivate_staffer(cls, email):
 		staffer = cls.get_active_staff().filter('email =', email).get()
 		staffer.active = False
+		staffer.closed = datetime.now()
+		td = datetime.now()-staffer.created
+		staffer.time_delta = (td.days*86400)+td.seconds
 		staffer.put()
 	
 	def name_or_nick(self):
@@ -122,6 +127,32 @@ class TokenHandler(webapp.RequestHandler):
 		get_token(True)
 		self.response.out.write("ok")
 
+class AppreciationEmailHandler(webapp.RequestHandler):
+	def get(self):
+		staff_members = db.GqlQuery("SELECT * FROM Signin WHERE created >= DATETIME(:start) AND type = 'StaffKey'",
+			start=(datetime.now()-timedelta(days=7)).strftime("%Y-%m-%d %H:%M:%S"))
+		content = """To Dojo Staff:\n\nThanks for helping run the dojo last week!  Our heros included:\n""" % locals()
+		totals = {}
+		emails = []
+		for staff_member in staff_members:
+			emails.append(staff_member.email)
+			if staff_member.name 	 in totals.keys():
+				totals[staff_member.name] = totals[staff_member.name]+staff_member.time_delta
+			else:
+				totals[staff_member.name] = staff_member.time_delta
+		for total in totals.keys():
+			if(totals[total] > 0):
+				content = content + " - " + total + ": " + str((totals[total])/60L) + " minutes\n"
+			else:
+				pass
+		content = content + """\nThanks,\nEveryone at the Dojo"""
+		mail.send_mail(sender="Hacker Dojo <hax@hackerdojo.com>",
+		              to=", ".join(emails),
+		              subject="Hacker Dojo Staff Appreciation",
+		              body=content)
+		self.response.out.write(content)
+		self.response.out.write("ok")
+
 class OpenHandler(webapp.RequestHandler):
 	def get(self):
 		staff = Signin.get_active_staff()
@@ -180,6 +211,7 @@ def main():
 		('/staff', StaffHandler),
 		('/open', OpenHandler),
 		('/refreshtoken', TokenHandler),
+		('/appreciationemail', AppreciationEmailHandler),
         ('/staffjson', JSONHandler),
         ], debug=True)
     wsgiref.handlers.CGIHandler().run(application)

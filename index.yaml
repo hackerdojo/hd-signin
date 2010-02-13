@@ -24,3 +24,8 @@ indexes:
   - name: type
   - name: created
     direction: desc
+
+- kind: Signin
+  properties:
+  - name: type
+  - name: created
