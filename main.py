@@ -19,8 +19,11 @@ from google.appengine.ext.webapp.mail_handlers import InboundMailHandler
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.api import mail
 import math
+import pprint
+import string
 
 GREETINGS = ['hello', 'hi', 'ahoy', 'welcome', 'greetings', 'howdy']
+MAX_SIGNIN_TIME = 60 * 60 * 8
 
 PBWORKS_TOKEN = None
 def get_token(refresh=False):
@@ -49,7 +52,22 @@ class Signin(db.Model):
 
   @classmethod
   def get_active_staff(cls):
-    return cls.all().filter('type IN', ['StaffKey', 'StaffNoKey']).filter('active =', True).order('-created')
+    staffers = cls.all().filter('type IN', ['StaffKey', 'StaffNoKey']).filter('active =', True).order('-created')
+    # Auto-signout
+    for staffer in staffers.fetch(1000):
+      td = datetime.now()-staffer.created
+      if td.seconds > MAX_SIGNIN_TIME:
+        staffer.active = False;
+        staffer.closed = datetime.now()
+        staffer.time_delta = MAX_SIGNIN_TIME
+        staffer.put()
+        mail.send_mail(
+            sender="Signin Machine <signin@hackerdojo.com>",
+            to=staffer.email,
+            subject="Are you still staffing the Dojo?",
+            body="You were automatically signed out after "+ str(MAX_SIGNIN_TIME/60/60) + " hours.\n\n"+
+                 "You can always sign-in again at http://hackerdojo-signin.appspot.com/ if you are still here.\n\n")
+    return staffers
   
   @classmethod
   def deactivate_staffer(cls, email):
@@ -132,28 +150,32 @@ class AppreciationEmailHandler(webapp.RequestHandler):
   def get(self):
     staff_members = db.GqlQuery("SELECT * FROM Signin WHERE created >= DATETIME(:start) AND type = 'StaffKey'",
       start=(datetime.now()-timedelta(days=7)).strftime("%Y-%m-%d %H:%M:%S"))
-    content = """To Dojo Staff:\n\nThanks for helping run the dojo last week!  Our heros included:\n""" % locals()
+    content = """To Dojo Staff:\n\nThanks for helping run the dojo last week!  Our heros included:\n\n""" % locals()
     totals = {}
     emails = []
     for staff_member in staff_members:
+      staff_member.name = string.capwords(staff_member.name)
       if staff_member.time_delta:
         emails.append(staff_member.email)
+        if staff_member.time_delta > MAX_SIGNIN_TIME:
+          staff_member.time_delta = MAX_SIGNIN_TIME
         if staff_member.name in totals.keys():
           totals[staff_member.name] = totals[staff_member.name]+staff_member.time_delta
         else:
           totals[staff_member.name] = staff_member.time_delta
-    for total in reversed(sorted(totals.keys())):
+    for total in sorted(totals.keys()):
       if(totals[total] > 0):
         content = content + " - " + total + ": " + str(math.floor(float(totals[total])/360)/10 ) + " hours\n"
       else:
         pass
     content = content + """\nThanks,\nEveryone at the Dojo"""
-    #mail.send_mail(sender="Hacker Dojo <hax@hackerdojo.com>",
-    #              to=", ".join(emails),
-    #              subject="Hacker Dojo Staff Appreciation",
-    #              body=content)
+    if self.request.get('sendemail'):
+      weekof = (datetime.now()-timedelta(days=7)).strftime("%b %e")
+      mail.send_mail(sender="Signin Machine <signin@hackerdojo.com>",
+                  to="staff@hackerdojo.com",
+                  subject="Hacker Dojo Staff Appreciation - Week of " + weekof,
+                  body=content)
     self.response.out.write(content)
-    self.response.out.write("ok")
 
 class OpenHandler(webapp.RequestHandler):
   def get(self):
@@ -192,16 +214,19 @@ class MailHandler(InboundMailHandler):
         if count > 0:
           staff = [s.email for s in staff.fetch(1000)]
           mail.send_mail(
-              sender=mail_message.sender,
+              sender="Signin Machine <signin@hackerdojo.com>",
               to=(', '.join(staff)),
+              cc=mail_message.sender,
               subject="[there@] " + mail_message.subject,
-              body=mail_message.body)
+              body=mail_message.body,
+              reply_to=mail_message.sender
+              )
         else:
           mail.send_mail(
-            sender="there@hackerdojo.com",
+            sender="Signin Machine <signin@hackerdojo.com>",
             to=mail_message.sender,
             subject="there@ bounce message",
-            body="Sorry, doesn't look like any staff is signed in")
+            body="Sorry, it doesn't look like any staff is signed in right now.")
 
 def main():
     application = webapp.WSGIApplication([
