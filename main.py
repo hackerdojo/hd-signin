@@ -53,6 +53,7 @@ class Signin(db.Model):
   @classmethod
   def get_active_staff(cls):
     staffers = cls.all().filter('type IN', ['StaffKey', 'StaffNoKey']).filter('active =', True).order('-created')
+    # Auto-signout
     for staffer in staffers.fetch(1000):
       td = datetime.now()-staffer.created
       if td.seconds > MAX_SIGNIN_TIME:
@@ -60,6 +61,12 @@ class Signin(db.Model):
         staffer.closed = datetime.now()
         staffer.time_delta = MAX_SIGNIN_TIME
         staffer.put()
+        mail.send_mail(
+            sender="Signin Machine <signin@hackerdojo.com>",
+            to=staffer.email,
+            subject="Are you still staffing the Dojo?",
+            body="You were automatically signed out after "+ str(MAX_SIGNIN_TIME/60/60) + " hours.\n\n"+
+                 "You can always sign-in again at http://hackerdojo-signin.appspot.com/ if you are still here.\n\n")
     return staffers
   
   @classmethod
@@ -207,16 +214,19 @@ class MailHandler(InboundMailHandler):
         if count > 0:
           staff = [s.email for s in staff.fetch(1000)]
           mail.send_mail(
-              sender=mail_message.sender,
+              sender="Signin Machine <signin@hackerdojo.com>",
               to=(', '.join(staff)),
+              cc=mail_message.sender,
               subject="[there@] " + mail_message.subject,
-              body=mail_message.body)
+              body=mail_message.body,
+              reply_to=mail_message.sender
+              )
         else:
           mail.send_mail(
-            sender="there@hackerdojo.com",
+            sender="Signin Machine <signin@hackerdojo.com>",
             to=mail_message.sender,
             subject="there@ bounce message",
-            body="Sorry, doesn't look like any staff is signed in")
+            body="Sorry, it doesn't look like any staff is signed in right now.")
 
 def main():
     application = webapp.WSGIApplication([
