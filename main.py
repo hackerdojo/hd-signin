@@ -37,7 +37,8 @@ def parse_json(data):
   return simplejson.loads(data.replace('/*-secure-','').replace('*/', ''))
 
 def broadcast(**message):
-  urlfetch.fetch('http://live.readyinrealtime.com/hackerdojo-signin', method='POST', payload=urllib.urlencode(message))
+  #urlfetch.fetch('http://live.readyinrealtime.com/hackerdojo-signin', method='POST', payload=urllib.urlencode(message))
+  noop = 2
 
 class Signin(db.Model):
   email = db.StringProperty(required=True)
