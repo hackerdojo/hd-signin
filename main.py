@@ -37,7 +37,8 @@ def parse_json(data):
   return simplejson.loads(data.replace('/*-secure-','').replace('*/', ''))
 
 def broadcast(**message):
-  urlfetch.fetch('http://live.readyinrealtime.com/hackerdojo-signin', method='POST', payload=urllib.urlencode(message))
+  #urlfetch.fetch('http://live.readyinrealtime.com/hackerdojo-signin', method='POST', payload=urllib.urlencode(message))
+  noop = 2
 
 class Signin(db.Model):
   email = db.StringProperty(required=True)
@@ -148,8 +149,8 @@ class TokenHandler(webapp.RequestHandler):
 
 class AppreciationEmailHandler(webapp.RequestHandler):
   def get(self):
-    staff_members = db.GqlQuery("SELECT * FROM Signin WHERE created >= DATETIME(:start) AND type = 'StaffKey'",
-      start=(datetime.now()-timedelta(days=7)).strftime("%Y-%m-%d %H:%M:%S"))
+    staff_members = db.GqlQuery("SELECT * FROM Signin WHERE created >= DATETIME(:start) AND type IN :types ",
+      start=(datetime.now()-timedelta(days=7)).strftime("%Y-%m-%d %H:%M:%S"),types=['StaffKey','StaffNoKey'])
     content = """To Dojo Staff:\n\nThanks for helping run the dojo last week!  Our heros included:\n\n""" % locals()
     totals = {}
     emails = []
