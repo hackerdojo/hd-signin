@@ -82,6 +82,11 @@ class Signin(db.Model):
   def name_or_nick(self):
     return self.name or self.email.split('@')[0]
 
+class ExportHandler(webapp.RequestHandler):
+  def get(self):
+    for e in Signin.all():
+      self.response.out.write(e.email+"\n")
+      
 class MainHandler(webapp.RequestHandler):
   def get(self):
     self.response.out.write(template.render('templates/main.html', locals()))
@@ -236,6 +241,7 @@ def main():
     ('/ministaff', MiniStaffHandler),
     ('/staff', StaffHandler),
     ('/open', OpenHandler),
+    # ('/export', ExportHandler), 
     ('/refreshtoken', TokenHandler),
     ('/appreciationemail', AppreciationEmailHandler),
         ('/staffjson', JSONHandler),
