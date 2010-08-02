@@ -2,20 +2,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"> 
 <head>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
-
 <script type="text/javascript"> 
-
 function stopRKey(evt) { 
   var evt = (evt) ? evt : ((event) ? event : null); 
   var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null); 
   var em = document.getElementById("em").value;
-  if ((evt.keyCode == 13) && (node.type=="text"))  {
-    
+  if ((evt.keyCode == 13) && (node.type=="text"))  {    
     entered = document.getElementById("em").value;
-    
-    
-    
-    
     /* RFID is numeric */
     if (entered > 0) {
       document.getElementById("em").value = "";
@@ -28,19 +21,16 @@ function stopRKey(evt) {
             document.getElementById("em").value = data.username + "@hackerdojo.com";
             $('.rfidpic').attr("src",data.gravatar);
             $('.rfidname').html(data.name);
+            // setTimeout('auto_reset()',90000);
           } else {
             $('#denied').show();
-            setTimeout("$('#denied').hide();",3000);
+            setTimeout("auto_reset()'",3 * 1000);
           }   
         } 
       );
-    }
-
-    
+    }    
     return false;
-    
   } 
-
   if (evt.keyCode==9 && em.length>0 && em.indexOf("@")==-1) {
      document.getElementById("em").value = em+"@hackerdojo.com";
   }
@@ -62,7 +52,6 @@ function showStaffButtons() {
     setTimeout("document.getElementById('staffbuttons').style.display='none';",30*1000);
 }
 
-//document.onkeydown = stopRKey; 
 document.onkeypress = stopRKey; 
 
 </script>
@@ -71,78 +60,83 @@ html,body {margin:0; padding:0; height:100%; width:100%}
 body {font-family:sans-serif; font-size:180%;}
 input {font-size:130%; margin:.5em }
 .hrow:hover {background:#88cca5; cursor:pointer}
-#rfidtable td {padding:6px 12px}
-
+#rfidtable td {padding:6px 12px; color:#333}
+.corners {
+  -webkit-border-radius: 8px;
+  -moz-border-radius: 8px;
+  border-radius: 8px;
+}
 </style>
 </head>
 <body onload="onl()">
-<form id=f method=post>
+<form id="f" method="post">
 
-<div id=tos style="display:none; position:absolute; z-index:2; top:10%; left:10%; width:80%; height:80%; border:2px solid black; background:white ">
-<iframe style="border:none" border=0 width=100% src="http://hackerdojo.pbworks.com/api_v2/op/GetPage/page/Policies/_type/html" height=80%>
-</iframe>
-<center><input style="margin:1em" type=button onclick="ok();" value="I agree to the terms above"></center>
-
+<div id="tos" class="corners" style="display:none; position:absolute; z-index:2; top:10%; left:10%; width:80%; height:80%; border:2px solid black; background:white ">
+  <iframe style="border:none" border=0 width=100% src="http://hackerdojo.pbworks.com/api_v2/op/GetPage/page/Policies/_type/html" height=80%>
+  </iframe>
+  <center><input style="margin:1em" type=button onclick="ok();" value="I agree to the terms above"></center>
 </div>
 
-<div id=rfidwelcome style="display:none; position:absolute; z-index:2; top:10%; left:25%; width:50%; height:70%; border:2px solid black; background:#baffbc; padding:1em">
-<h1 style="margin-top:0">Welcome <span class="rfidname">Name</span></h1>
-
-<p>Please choose a sign-in option:</p>
-
-<table align=center border=0 cellspacing=0 cellpadding=0 id=rfidtable>
-<tr class=hrow onclick="go('Anonymous',true)">
-<td>
-  <img height=80 width=80 src="/static/anon.png">
+<div id="rfidwelcome" class="corners" style="display:none; position:absolute; z-index:2; top:05%; left:25%; width:50%; border:2px solid black; background:#baffbc; padding:1em">
+  <h2 style="margin:0">Welcome <span class="rfidname">Name</span></h2>
+  
+  <p style="font-size:24px; margin-bottom:1em">Please choose a sign-in option.</p>
+  
+  <table width="80%" align="center" border="0" cellspacing="0" cellpadding="0" id="rfidtable">
+  <tr class="hrow" onclick="go('Anonymous',true)">
+  <td>&nbsp;</td>
+  <td width="84">
+    <img height="84" width="84" src="/static/anon.png">
+    </td>
+    <td>
+    <h3 style="margin:0">Anonymous</h3>
   </td>
+  </tr>
+  <tr class="hrow" onclick="go('Member',true)">
+  <td>&nbsp;</td>
   <td>
-  <h3  style="margin:0">Anonymous</h3>
-</td>
-</tr>
-<tr class=hrow onclick="go('Member',true)">
-<td>
-  <img height=80 width=80 src="/static/anon.png" class="rfidpic" style="border:1px solid orange">
+    <img height="80" width="80" src="/static/anon.png" class="rfidpic" style="border:2px solid orange">
+    </td>
+    <td>
+    <h3 style="margin:0"><span class="rfidname">Name</span></h3>
+    <h4 style="margin:0">Member</h4>
   </td>
+  </tr>
+  <tr class="hrow" onclick="go('StaffKey',true)">
+  <td>&nbsp;</td>
   <td>
-  <h3 style="margin:0"><span class="rfidname">Name</span></h3>
-  <h4 style="margin:0">Member</h4>
-</td>
-</tr>
-<tr class=hrow onclick="go('StaffKey',true)">
-<td>
-  <img height=80 width=80 src="/static/anon.png" class="rfidpic" style="border:1px solid blue">
+    <img height="80" width="80"  src="/static/anon.png" class="rfidpic" style="border:2px solid blue">
+    </td>
+    <td>
+    <h3 style="margin:0"><span class="rfidname">Name</span></h3>
+    <h4 style="margin:0">Acting as staff</h4>
   </td>
+  </tr>
+  <tr class=hrow onclick="cancel()">
+  <td>&nbsp;</td>
   <td>
-  <h3 style="margin:0"><span class="rfidname">Name</span></h3>
-  <h4 style="margin:0">Acting as staff</h4>
-</td>
-</tr>
-<tr class=hrow onclick="cancel()">
-<td>
-  <img height=80 width=80 src="/static/x.png">
+    <img height="84" width="84" src="/static/x.png">
+    </td>
+    <td>
+    <h3 style="margin:0">Cancel</h3>
   </td>
-  <td>
-  <h3 style="margin:0">Cancel</h3>
-</td>
-</tr>
-
-</table>
-
+  </tr>
+  </table>
 </div>
 
-<div id=ajaxloading style="padding:3em; display:none; position:absolute; z-index:2; top:35%; left:35%; width:20%; border:2px solid black; background:#baffbc ">
-  <center>Please Wait <img src="/static/spinny.gif" width=15 height=15 align=absmiddle ></center>
+<div id="ajaxloading" class="corners" style="padding:3em; display:none; position:absolute; z-index:2; top:35%; left:35%; width:20%; border:2px solid black; background:#baffbc ">
+  <center>Please Wait <img src="/static/spinny2.gif" style="margin:1em" width="54" height="55" align="absmiddle" /></center>
 </div>
 
-<div id=thanks style="padding:3em; display:none; position:absolute; z-index:2; top:35%; left:35%; width:20%; border:2px solid black; background:#baffbc ">
+<div id="thanks"  class="corners" style="padding:3em; display:none; position:absolute; z-index:2; top:35%; left:35%; width:20%; border:2px solid black; background:#baffbc ">
   <center>Thank You</center>
 </div>
 
-<div id=denied style="padding:4em; display:none; color:black; position:absolute; z-index:2; top:35%; left:25%; width:40%; border:2px solid red; background:#faa ">
+<div id="denied" class="corners" style="padding:4em; display:none; color:black; position:absolute; z-index:2; top:35%; left:25%; width:40%; border:2px solid red; background:#faa ">
   <h1><center>Access Denied</center></h1>
 </div>
 
-<div id=privacy style="padding:1em; display:none; position:absolute; z-index:2; top:25%; left:25%; width:40%; border:2px solid black; background:#baffbc; font-size:80% ">
+<div id="privacy" class="corners" style="padding:1em; display:none; position:absolute; z-index:2; top:25%; left:25%; width:40%; border:2px solid black; background:#baffbc; font-size:80% ">
   <h2>E-mail Privacy</h2>
 
   <p>The Dojo will not sell, rent, or give out your e-mail address to ANYONE.</p>
@@ -152,31 +146,41 @@ input {font-size:130%; margin:.5em }
   <p>We hate spam & we're not evil ;)</p>
 
   <p><a href="#" onclick="document.getElementById('privacy').style.display='none'; document.getElementById('em').focus();">Close</a></p>
-
 </div>
 
-
 <center>
-<img style="margin:1.5em" src="/static/logo.png" width=690 height=244 >
+
+<img style="margin:1.5em" src="/static/logo.png" width="690" height="244" />
 
 <h2>Please Sign In</h2>
 
-E-mail: <input id=em type=text name=email>
+E-mail: <input id="em" type="text" name="email">
 <a style="color:green; font-size:9px" href="#" onclick="document.getElementById('privacy').style.display='block';">E-mail Privacy</a>
 <br>
 
-
-<input type=button value=Member onclick="go('Member')"/>
-<input type=button value=Guest onclick="go('Guest')"/>
-<input type=button value="Event Attendee" onclick="go('Event')"/>
+<input type="button" value="Member" onclick="go('Member')"/>
+<input type="button" value="Guest" onclick="go('Guest')"/>
+<input type="button" value="Event Attendee" onclick="go('Event')"/>
 
 <div id="staffbuttons" style="display:none">
   <input type=button value="Staff (keyholder)" onclick="go('StaffKey')"/>
   <input type=button value="Staff (nokey)" onclick="go('StaffNoKey')"/>
 </div>
 
-<input id=ttt type=hidden name=type value=""/>
+<input id="ttt" type="hidden" name="type" value=""/>
 <script>
+function auto_reset() {
+  $('#tos').hide();
+  $('#thanks').hide();
+  $('#denied').hide();
+  $('#privacy').hide();
+  $('#rfidwelcome').hide();
+  $('#ajaxloading').hide();
+  document.getElementById("ttt").value = "";
+  document.getElementById("em").value = "";
+  document.getElementById("em").focus();
+}
+
 function go(x,skip) {
   if (isEmail(document.getElementById("em").value)) {
     document.getElementById("ttt").value = x;
@@ -186,6 +190,7 @@ function go(x,skip) {
       document.getElementById("f").submit();
     } else {
       document.getElementById("tos").style.display = 'block';
+      setTimeout('auto_reset()',5*60*1000);
     }
   } else {
     alert("Please enter a valid e-mail address");
@@ -209,7 +214,6 @@ function onl() {
 
 </form>
 </center>
-
 
 </body>
 </html>
