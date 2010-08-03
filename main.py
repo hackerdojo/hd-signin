@@ -22,23 +22,10 @@ import math
 import pprint
 import string
 
-GREETINGS = ['hello', 'hi', 'ahoy', 'welcome', 'greetings', 'howdy']
 MAX_SIGNIN_TIME = 60 * 60 * 8
-
-PBWORKS_TOKEN = None
-def get_token(refresh=False):
-  global PBWORKS_TOKEN
-  if refresh or not PBWORKS_TOKEN:
-    response = urlfetch.fetch('http://dojo.pbworks.com/api_v2/op/Login/email/appenginebot%40hackerdojo.com/password/botbotbot/_type/jsontext').content
-    PBWORKS_TOKEN = parse_json(response)['token']
-  return PBWORKS_TOKEN
 
 def parse_json(data):
   return simplejson.loads(data.replace('/*-secure-','').replace('*/', ''))
-
-def broadcast(**message):
-  #urlfetch.fetch('http://live.readyinrealtime.com/hackerdojo-signin', method='POST', payload=urllib.urlencode(message))
-  noop = 2
 
 class Signin(db.Model):
   email = db.StringProperty(required=True)
@@ -97,37 +84,10 @@ class MainHandler(webapp.RequestHandler):
       email = '%s@hackerdojo.com' % email
     if email:
       hash=hashlib.md5(email).hexdigest()
-      
-      # Defaults
       image = 'http://0.gravatar.com/avatar/%s' % hash
-      name = email.split('@')[0].replace('.', ' ')
-      say = '%s, %s' % (random.choice(GREETINGS), name.split(' ')[0])
-      text = "Welcome back to Hacker Dojo, %s!" % name.split(' ')[0]
-      
-      # If on staff
-      if 'Staff' in self.request.get('type'):
-        response = urlfetch.fetch('http://dojo.pbworks.com/api_v2/op/GetUserInfo/_type/jsontext/email/%s/token/%s' % (urllib.quote(email), get_token())).content
-        if not 'appenginebot' in response:
-          response = parse_json(response)
-          image = response['image']
-          name = response['name']
-          say = "Staff member, %s" % name
-          text = "Welcome back, %s. Remember to check out when you leave!" % name.split(' ')[0]  
-      else:
-        # TODO: contact signup app
-        # if member
-        #   say = "member" + name
-        # else...
-        
-        # If new visitor
-        s = Signin.all().filter('email =', email).get()
-        if not s:
-          say = "Welcome to Hacker Dojo!"
-          text = "Congrats on your first visit, %s!" % name
-      
+      name = string.capwords(email.split('@')[0].replace('.', ' '))
       s = Signin(email=email, type=self.request.get('type'), image_url=image, name=name)
       s.put()
-      broadcast(text=text, say=say)
     self.redirect('/')
 
 class StaffHandler(webapp.RequestHandler):
@@ -141,22 +101,33 @@ class StaffHandler(webapp.RequestHandler):
       Signin.deactivate_staffer(email)
     self.redirect('/staff')
 
+class LogHandler(webapp.RequestHandler):
+  def get(self):
+    staff_db = db.GqlQuery("SELECT * FROM Signin WHERE created >= DATETIME(:start) ORDER BY created desc LIMIT 100",
+      start=(datetime.now()-timedelta(days=0.5)).strftime("%Y-%m-%d %H:%M:%S"))
+    staff = []
+    for s in staff_db:
+      if s.type in ["Anonymous","Guest","Event"]:
+        s.name = ""
+        s.anonymous = True
+      if s.type in ["StaffKey","StaffNoKey"]:
+        s.type = "Staff"
+      if s.type in ["Event"]:
+        s.type = "Event Guest"
+      staff.append(s)
+    self.response.out.write(template.render('templates/log.html', locals()))
+  
 class MiniStaffHandler(webapp.RequestHandler):
   def get(self):
     staff = Signin.get_active_staff()
     isopen = staff.count() > 0
     self.response.out.write(template.render('templates/ministaff.html', locals()))
 
-class TokenHandler(webapp.RequestHandler):
-  def get(self):
-    get_token(True)
-    self.response.out.write("ok")
-
 class AppreciationEmailHandler(webapp.RequestHandler):
   def get(self):
     staff_members = db.GqlQuery("SELECT * FROM Signin WHERE created >= DATETIME(:start) AND type IN :types ",
       start=(datetime.now()-timedelta(days=7)).strftime("%Y-%m-%d %H:%M:%S"),types=['StaffKey','StaffNoKey'])
-    content = """To Dojo Staff:\n\nThanks for helping run the dojo last week!  Our heros included:\n\n""" % locals()
+    content = """To Dojo Members:\n\nThanks for helping run the dojo last week!  Our heros included:\n\n""" % locals()
     totals = {}
     emails = []
     for staff_member in staff_members:
@@ -178,8 +149,8 @@ class AppreciationEmailHandler(webapp.RequestHandler):
     if self.request.get('sendemail'):
       weekof = (datetime.now()-timedelta(days=7)).strftime("%b %e")
       mail.send_mail(sender="Signin Machine <signin@hackerdojo.com>",
-                  to="staff@hackerdojo.com",
-                  subject="Hacker Dojo Staff Appreciation - Week of " + weekof,
+                  to="members@hackerdojo.com",
+                  subject="Hacker Dojo Member Appreciation - Week of " + weekof,
                   body=content)
     self.response.out.write(content)
 
@@ -232,7 +203,7 @@ class MailHandler(InboundMailHandler):
             sender="Signin Machine <signin@hackerdojo.com>",
             to=mail_message.sender,
             subject="there@ bounce message",
-            body="Sorry, it doesn't look like any staff is signed in right now.")
+            body="Sorry, it doesn't look like anyone is signed in as staff right now.")
 
 def main():
     application = webapp.WSGIApplication([
@@ -241,8 +212,8 @@ def main():
     ('/ministaff', MiniStaffHandler),
     ('/staff', StaffHandler),
     ('/open', OpenHandler),
+    ('/log', LogHandler),
     # ('/export', ExportHandler), 
-    ('/refreshtoken', TokenHandler),
     ('/appreciationemail', AppreciationEmailHandler),
         ('/staffjson', JSONHandler),
         ], debug=True)

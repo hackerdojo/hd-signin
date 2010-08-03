@@ -1,0 +1,43 @@
+<html>
+<head>
+	<link rel="stylesheet" type="text/css" href="http://dustball.com/dojo/kiosk.css" />
+</head>
+<body>
+
+<style>
+td {padding:6px 12px; font-size:18px}
+tr.even td {
+  background-color: #eee;
+}
+tr.odd  td {
+  background-color: #fff;
+}
+.ago {
+  color:#999;
+}
+.picheight {
+  height:28px;
+}
+</style>
+
+<table cellspacing="0" cellpadding="0" border="0" align="center" >
+{% for staffer in staff %}    
+  <tr class="{% cycle even,odd %}">
+  <td>&nbsp;</td>
+  <td><div class="type">{{ staffer.type }}</div></td>
+  <td>
+    <div class="picheight">
+    {% if not staffer.anonymous %}
+      <img class="pic picheight" src="{{ staffer.image_url }}" align="absmiddle" align="absmiddle" />
+      {{ staffer.name_or_nick }}
+    {% endif %}
+    </div>
+  </td>
+  <td><div class="ago">{{ staffer.created|timesince }} ago</div></td>
+  <td>&nbsp;</td>
+  </tr>
+{% endfor %}
+</table>
+
+</body>
+</html>

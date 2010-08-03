@@ -2,14 +2,34 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"> 
 <head>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+<script type="text/javascript" src="/static/md5.js"></script>
 <script type="text/javascript"> 
 var main_screen_turn_on = false;
+
+function capstaff(evt) { 
+  var evt = (evt) ? evt : ((event) ? event : null); 
+  if (evt.keyCode) code = evt.keyCode;
+  else if (evt.which) code = evt.which;  
+  var em = document.getElementById("em").value;  
+  if (code==45 || code==18) {
+    showStaffButtons();
+    return false;
+  }
+  if (code==9 && em.length>0 && em.indexOf("@")==-1) {
+    document.getElementById("em").value = em+"@hackerdojo.com";
+    return false;
+  }  
+}
 
 function stopRKey(evt) { 
   var evt = (evt) ? evt : ((event) ? event : null); 
   var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null); 
   var em = document.getElementById("em").value;
   
+  if (evt.keyCode==45 || evt.keyCode==18) {
+    showStaffButtons();
+  }
+    
   if (evt.keyCode) code = evt.keyCode;
   else if (evt.which) code = evt.which;
 
@@ -45,12 +65,7 @@ function stopRKey(evt) {
     }    
     return false;
   } 
-  if (code==9 && em.length>0 && em.indexOf("@")==-1) {
-     document.getElementById("em").value = em+"@hackerdojo.com";
-  }
-  if (code==45 || code==18) {
-    showStaffButtons();
-  }
+
 } 
 
 function cancel() {
@@ -68,6 +83,7 @@ function showStaffButtons() {
 }
 
 document.onkeypress = stopRKey; 
+document.onkeydown = capstaff; 
 
 </script>
 <style>
@@ -92,7 +108,7 @@ input {font-size:130%; margin:.5em }
   <center><input style="margin:1em" type=button onclick="ok();" value="I agree to the terms above"></center>
 </div>
 
-<div id="rfidwelcome" class="corners" style="display:none; position:absolute; z-index:2; top:05%; left:25%; width:50%; border:2px solid black; background:#baffbc; padding:1em">
+<div id="rfidwelcome" class="corners" style="display:none; position:absolute; z-index:2; top:05%; left:15%; width:70%; border:2px solid black; background:#baffbc; padding:1em">
   <h2 style="margin:0">Welcome <span class="rfidname">Name</span></h2>
   
   <p style="font-size:24px; margin-bottom:1em">Please choose a sign-in option.</p>
@@ -106,7 +122,7 @@ input {font-size:130%; margin:.5em }
     <td>
     <h3 style="margin:0">Anonymous</h3>
   </td>
-  <td><input type="button" value="1" /></td>
+  <td><input type="button" value="1" style="border:2px solid black" /></td>
   <td>&nbsp;</td>  
   </tr>
   <tr class="hrow" onclick="go('Member',true)">
@@ -118,7 +134,7 @@ input {font-size:130%; margin:.5em }
     <h3 style="margin:0"><span class="rfidname">Name</span></h3>
     <h4 style="margin:0">Member</h4>
   </td>
-  <td><input type="button" value="2" /></td>
+  <td><input type="button" value="2" style="border:2px solid orange" /></td>
   <td>&nbsp;</td>  
   </tr>
   <tr class="hrow" onclick="go('StaffKey',true)">
@@ -130,7 +146,7 @@ input {font-size:130%; margin:.5em }
     <h3 style="margin:0"><span class="rfidname">Name</span></h3>
     <h4 style="margin:0">Acting as staff</h4>
   </td>
-  <td><input type="button" value="3" /></td>
+  <td><input type="button" value="3" style="border:2px solid blue" /></td>
   <td>&nbsp;</td>  
   </tr>
   <tr class=hrow onclick="cancel()">
@@ -141,7 +157,7 @@ input {font-size:130%; margin:.5em }
     <td>
     <h3 style="margin:0">Cancel</h3>
   </td>
-  <td><input type="button" value="4" /></td>
+  <td><input type="button" value="4" style="border:2px solid red" /></td>
   <td>&nbsp;</td>
   </tr>
   </table>
@@ -181,17 +197,36 @@ E-mail: <input id="em" type="text" name="email">
 <a style="color:green; font-size:9px" href="#" onclick="document.getElementById('privacy').style.display='block';">E-mail Privacy</a>
 <br>
 
-<input type="button" value="Member" onclick="go('Member')"/>
+<input type="button" value="Member" onclick="clickmember()"/>
 <input type="button" value="Guest" onclick="go('Guest')"/>
 <input type="button" value="Event Attendee" onclick="go('Event')"/>
 
 <div id="staffbuttons" style="display:none">
-  <input type=button value="Staff (keyholder)" onclick="go('StaffKey')"/>
-  <input type=button value="Staff (nokey)" onclick="go('StaffNoKey')"/>
+  <input type=button value="Staff" onclick="go('StaffKey')"/>
 </div>
 
 <input id="ttt" type="hidden" name="type" value=""/>
 <script>
+String.prototype.capitalize = function(){
+   return this.replace( /(^|\s)([a-z])/g , function(m,p1,p2){ return p1+p2.toUpperCase(); } );
+};
+  
+function clickmember() {
+  var em = document.getElementById("em").value;  
+  if (em.indexOf("@hackerdojo.com")==-1) {
+    alert("That e-mail address does not match a valid @hackerdojo.com e-mail.");   
+    return false;
+  } else {
+     main_screen_turn_on = true;
+     em.value
+     $('#rfidwelcome').show();
+     name = em.substring(0,em.indexOf("@hackerdojo.com")).replace("."," ").capitalize();
+     gravatar = "http://www.gravatar.com/avatar/" + hex_md5(em);
+     $('.rfidpic').attr("src",gravatar);
+     $('.rfidname').html(name);
+   }  
+}
+
 function auto_reset() {
   $('#tos').hide();
   $('#thanks').hide();
