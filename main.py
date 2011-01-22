@@ -176,6 +176,48 @@ class OpenHandler(webapp.RequestHandler):
     else:
       self.response.out.write("Hacker Dojo is unfortunately closed.")
 
+class StatHandler(webapp.RequestHandler):
+  def get(self):
+    self.response.out.write(template.render('templates/stats.html', locals()))
+
+class StatsHandler(webapp.RequestHandler):
+  def get(self,format):
+    days = {}
+    formats = {'daily':"%Y-%m-%d", 'weekly':"%Y Week %U", 'monthly':"%Y-%m"}
+    date_format = formats[format]
+    interested = ['Guest','Event','Anonymous','Member','StaffKey','StaffNoKey']
+    self.response.headers.add_header('Content-Type',"text/csv")
+    self.response.headers.add_header('Content-disposition',"attachment;filename=signin-stats-"+format+".csv")
+    self.response.out.write("Date")
+    for t in interested:
+        self.response.out.write(",")
+        self.response.out.write(t)
+    self.response.out.write("\n")
+    
+    for signin in Signin.all().order("created"):
+      ts = signin.created.strftime(date_format)
+      if ts not in days:
+        days[ts] = {}
+      if signin.type not in days[ts]:
+        days[ts][signin.type] = 0
+      days[ts][signin.type] += 1
+      if days[ts][signin.type] == 1401:
+        days[ts][signin.type] = 14
+
+    ordered_days = days.keys()
+    ordered_days.sort()
+    
+    for day in ordered_days:
+      self.response.out.write(day)
+      for t in interested:
+        self.response.out.write(",")
+        if t in days[day]:
+          self.response.out.write(days[day][t])
+        else:
+          self.response.out.write("0")
+      self.response.out.write("\n")
+
+
 class JSONHandler(webapp.RequestHandler):
   def get(self):
     staff = Signin.get_active_staff()
@@ -220,6 +262,8 @@ def main():
     ('/ministaff', MiniStaffHandler),
     ('/staff', StaffHandler),
     ('/open', OpenHandler),
+    ('/stats/?', StatHandler),
+    ('/stats/(.+)', StatsHandler),
     ('/log', LogHandler),
     # ('/export', ExportHandler), 
     ('/appreciationemail', AppreciationEmailHandler),
