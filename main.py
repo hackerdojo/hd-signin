@@ -76,6 +76,14 @@ class ExportHandler(webapp.RequestHandler):
       
 class MainHandler(webapp.RequestHandler):
   def get(self):
+    today_db = db.GqlQuery("SELECT * FROM Signin WHERE created >= DATETIME(:earlier_this_morning) ORDER BY created desc LIMIT 1000",
+      earlier_this_morning=(datetime.now().strftime("%Y-%m-%d 08:00:00")))
+    today_count = today_db.count()
+    if today_count > 1:
+      today_count_signigicant = True
+    dayofWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    oldDate = datetime.now()  
+    day = dayofWeek[datetime.weekday(oldDate)]
     self.response.out.write(template.render('templates/main.html', locals()))
   
   def post(self):

@@ -100,6 +100,13 @@ input {font-size:130%; margin:.5em }
 </style>
 </head>
 <body onload="onl()">
+
+{% if today_count_signigicant %}
+<div style="text-align:center; font-size:18px; position:absolute; background:#f9f9f9; top:12px; right:12px; border:1px solid #ccc; padding:.5em; -webkit-border-radius: 7px; -moz-border-radius: 7px; border-radius: 7px;">
+  {{today_count}} sign-ins today<br/>~ {{day}} ~
+</div>
+{% endif %}
+
 <form id="f" method="post">
 
 <div id="tos" class="corners" style="display:none; position:absolute; z-index:2; top:10%; left:10%; width:80%; height:80%; border:2px solid black; background:white ">
