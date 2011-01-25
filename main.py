@@ -185,7 +185,7 @@ class StatsHandler(webapp.RequestHandler):
     days = {}
     formats = {'daily':"%Y-%m-%d", 'weekly':"%Y Week %U", 'monthly':"%Y-%m"}
     date_format = formats[format]
-    interested = ['Guest','Event','Anonymous','Member','StaffKey','StaffNoKey']
+    interested = ['Guest','Anonymous','Staff','Member','Event']
     self.response.headers.add_header('Content-Type',"text/csv")
     self.response.headers.add_header('Content-disposition',"attachment;filename=signin-stats-"+format+".csv")
     self.response.out.write("Date")
@@ -195,9 +195,11 @@ class StatsHandler(webapp.RequestHandler):
     self.response.out.write("\n")
     
     for signin in Signin.all().order("created"):
-      ts = signin.created.strftime(date_format)
+      ts = string.replace(signin.created.strftime(date_format),"Week 00","Week 01")
       if ts not in days:
         days[ts] = {}
+      if signin.type in ['StaffKey','StaffNoKey']:
+        signin.type = 'Staff'
       if signin.type not in days[ts]:
         days[ts][signin.type] = 0
       days[ts][signin.type] += 1

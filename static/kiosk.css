@@ -1,0 +1,29 @@
+html,body {margin:0; padding:0; height:100%; width:100%}
+body {font-family:sans-serif;}
+
+#top {position:absolute; top:2%; left:5%; width:90%; height:20%;}
+#left {position:absolute; top:30%; left:5%; width:40%; height:69%;}
+#right {position:absolute; top:30%; left:55%; width:40%; height:69%;}
+
+#top img {float:left; margin-right:2em}
+h1,h2,h3 {margin-top:0;margin-bottom:.5em}
+
+.sectionhead {border-bottom:1px solid #ccc;}
+ 
+.staffline {clear:both; padding-top:1.0em; height:80px;}
+.staffline .pic {height:72px; width:52px;margin:1px; float:left; margin-right:8px; }
+.staffline .picbox {border:1px solid #ccc; width:54px; height:74px; float:left; margin-right:10px}
+.staffline .name {font-size:150%; margin-top:6px}
+.staffline .email {margin-top:.5em; color:#777; font-size:75%;}
+.staffline .ago {margin-top:.5em; font-size:75%; color:#777}
+.staffline {cursor:pointer}
+.staffline:hover {background:#ddd; }
+
+#msg {font-size:150%; display:none; text-align:center; padding:3em; position:absolute; z-index:2; top:35%; left:25%; width:40%; border:2px solid black; background:#baffbc;}
+
+.ministaff .pic {border:1px solid #ccc;}
+.ministaff .name {font-weight:bold}
+.ministaff td {font-size:10px;}
+.openline, .closeline {padding-top:.7em; font-size:12px; width:100%; text-align:center}
+.openline {color:green;}
+.closeline {color:red;}
