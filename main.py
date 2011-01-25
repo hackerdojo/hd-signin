@@ -6,6 +6,7 @@ from google.appengine.api.labs import taskqueue
 from google.appengine.ext import webapp
 from google.appengine.api import users
 from google.appengine.ext.webapp import template
+from google.appengine.ext import deferred
 from google.appengine.ext import db
 from google.appengine.api import urlfetch
 from google.appengine.api import mail
@@ -21,12 +22,14 @@ from google.appengine.api import mail
 import math
 import pprint
 import string
+import util
 
 MAX_SIGNIN_TIME = 60 * 60 * 8
 
 def parse_json(data):
   return simplejson.loads(data.replace('/*-secure-','').replace('*/', ''))
 
+# A log of all signins.  One row per signin.
 class Signin(db.Model):
   email = db.StringProperty(required=True)
   hash = db.StringProperty()
@@ -69,11 +72,68 @@ class Signin(db.Model):
   def name_or_nick(self):
     return self.name or self.email.split('@')[0]
 
+  @classmethod
+  def signin(cls, email, type):
+    if not '@' in email:
+      raise EmailError("malformed e-mail")
+    hash = hashlib.md5(email).hexdigest()
+    image = 'http://0.gravatar.com/avatar/%s' % hash
+    name = string.capwords(email.split('@')[0].replace('.', ' '))
+    s = Signin(email=email, type=type, image_url=image, name=name)
+    s.put()
+
+# Unlike the signin log, this table is one row per e-mail address.
+class SigninRecord(db.Model):
+  email = db.StringProperty(required=True)
+  first_signin = db.DateTimeProperty(auto_now_add=True)
+  last_signin = db.DateTimeProperty()
+  signins = db.IntegerProperty()
+  
+  @classmethod
+  def signin(cls, email, when):
+    rec = cls.all().filter('email =', email).get()
+    if rec:
+      rec.signins += 1
+      rec.last_signin = when
+    else:
+      rec = SigninRecord(email=email, first_signin=when, last_signin=when, signins=1)
+    rec.put()
+    return rec
+
+# AJAX Signin
+class SigninHandler(webapp.RequestHandler):
+  def get(self):
+    email = self.request.get('email')
+    type = self.request.get('type')
+    if email and type:
+      Signin.signin(email, type)
+      record = SigninRecord.signin(email, datetime.now())
+      response = {"signins":record.signins}
+    else:
+      response = {"error": "need to specify email and type"}
+    self.response.out.write(simplejson.dumps(response))
+
+# Initializes SigninRecord database (see util.py)
+class InitRecordsHandler(webapp.RequestHandler):
+  def get(self):
+    deferred.defer(util.init_records)
+    self.response.out.write("Done\n")
+
+# Count number of singins, useful for debugging
+class CountHandler(webapp.RequestHandler):
+  def get(self):
+    i = 0
+    for s in SigninRecord.all():
+      i = i + s.signins
+    self.response.out.write(str(i))
+  
+# Exports e-mail addresses (usually disabled)
 class ExportHandler(webapp.RequestHandler):
   def get(self):
     for e in Signin.all():
       self.response.out.write(e.email+"\n")
-      
+
+# Renders the main page      
 class MainHandler(webapp.RequestHandler):
   def get(self):
     today_db = db.GqlQuery("SELECT * FROM Signin WHERE created >= DATETIME(:earlier_this_morning) ORDER BY created desc LIMIT 1000",
@@ -88,16 +148,11 @@ class MainHandler(webapp.RequestHandler):
   
   def post(self):
     email = self.request.get('email')
-    if not '@' in email:
-      email = '%s@hackerdojo.com' % email
-    if email:
-      hash=hashlib.md5(email).hexdigest()
-      image = 'http://0.gravatar.com/avatar/%s' % hash
-      name = string.capwords(email.split('@')[0].replace('.', ' '))
-      s = Signin(email=email, type=self.request.get('type'), image_url=image, name=name)
-      s.put()
+    type = self.request.get('type')
+    Signin.signin(email, type)
     self.redirect('/')
 
+# Used by the kiosk in an iframe
 class StaffHandler(webapp.RequestHandler):
   def get(self):
     staff = Signin.get_active_staff()
@@ -109,6 +164,7 @@ class StaffHandler(webapp.RequestHandler):
       Signin.deactivate_staffer(email)
     self.redirect('/staff')
 
+# Used by /log - the user facing log of people that have signed in last 12 hours
 class LogHandler(webapp.RequestHandler):
   def get(self):
     staff_db = db.GqlQuery("SELECT * FROM Signin WHERE created >= DATETIME(:start) ORDER BY created desc LIMIT 100",
@@ -124,13 +180,15 @@ class LogHandler(webapp.RequestHandler):
         s.type = "Event Guest"
       staff.append(s)
     self.response.out.write(template.render('templates/log.html', locals()))
-  
+
+# Used by the widget on the dojo website
 class MiniStaffHandler(webapp.RequestHandler):
   def get(self):
     staff = Signin.get_active_staff()
     isopen = staff.count() > 0
     self.response.out.write(template.render('templates/ministaff.html', locals()))
 
+# Sends out an e-mail to members every Sunday
 class AppreciationEmailHandler(webapp.RequestHandler):
   def get(self):
     staff_members = db.GqlQuery("SELECT * FROM Signin WHERE created >= DATETIME(:start) AND type IN :types ",
@@ -162,6 +220,7 @@ class AppreciationEmailHandler(webapp.RequestHandler):
                   body=content)
     self.response.out.write(content)
 
+# Used by /open, for example by the Twilio phone number ("The Dojo is open, staffed by x,y,z..")
 class OpenHandler(webapp.RequestHandler):
   def get(self):
     staff = Signin.get_active_staff()
@@ -176,10 +235,12 @@ class OpenHandler(webapp.RequestHandler):
     else:
       self.response.out.write("Hacker Dojo is unfortunately closed.")
 
+# Used by /stats
 class StatHandler(webapp.RequestHandler):
   def get(self):
     self.response.out.write(template.render('templates/stats.html', locals()))
 
+# Used by /stats/*
 class StatsHandler(webapp.RequestHandler):
   def get(self,format):
     days = {}
@@ -219,7 +280,7 @@ class StatsHandler(webapp.RequestHandler):
           self.response.out.write("0")
       self.response.out.write("\n")
 
-
+# Used by /staffjson (not sure what uses it)
 class JSONHandler(webapp.RequestHandler):
   def get(self):
     staff = Signin.get_active_staff()
@@ -235,6 +296,7 @@ class JSONHandler(webapp.RequestHandler):
             
     self.response.out.write(simplejson.dumps([to_dict(staffer) for staffer in staff]))
 
+# Used to power there@hackerdojo.com - send e-mail to everyone "there" (signed in) at the Dojo
 class MailHandler(InboundMailHandler):
     def receive(self, mail_message):
         
@@ -262,17 +324,20 @@ def main():
         ('/', MainHandler), 
         (r'^/_ah/mail/there.*', MailHandler),
     ('/ministaff', MiniStaffHandler),
+    ('/signin', SigninHandler),
     ('/staff', StaffHandler),
     ('/open', OpenHandler),
     ('/stats/?', StatHandler),
     ('/stats/(.+)', StatsHandler),
     ('/log', LogHandler),
+    # ('/initrecords', InitRecordsHandler), 
+    ('/count', CountHandler), 
     # ('/export', ExportHandler), 
     ('/appreciationemail', AppreciationEmailHandler),
         ('/staffjson', JSONHandler),
         ], debug=True)
     wsgiref.handlers.CGIHandler().run(application)
- 
+   
 if __name__ == '__main__':
     main()
- 
+  

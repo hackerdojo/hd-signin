@@ -1,7 +1,4 @@
 cron:
-- description: refresh wiki token
-  url: /refreshtoken
-  schedule: every 5 minutes  
 
 - description: staff appreciation email
   url: /appreciationemail?sendemail=true
