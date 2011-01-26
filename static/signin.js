@@ -9,7 +9,7 @@ function capstaff(evt) {
     showStaffButtons();
     return false;
   }
-  if (code==9 && em.length>0 && em.indexOf("@")==-1) {
+  if (code==9 && em.length > 0 && em.indexOf("@") == -1) {
     document.getElementById("em").value = em+"@hackerdojo.com";
     return false;
   }  
@@ -24,55 +24,66 @@ function stopRKey(evt) {
     showStaffButtons();
   }
     
-  if (evt.keyCode) code = evt.keyCode;
-  else if (evt.which) code = evt.which;
+  if (evt.keyCode)
+    code = evt.keyCode;
+  else 
+    if (evt.which)
+      code = evt.which;
 
   if (main_screen_turn_on) {
-   if (code == 49) go('Anonymous',true);
-   if (code == 50) go('Member',true);
-   if (code == 51) go('StaffKey',true);
-   if (code == 52) cancel();
-   return false;
+    if (code == 49) go('Anonymous');
+    if (code == 50) go('Member');
+    if (code == 51) go('StaffKey');
+    if (code == 52) cancel();
+    return false;
   }
+  
   if ((code == 13) && (node.type=="text"))  {    
     entered = document.getElementById("em").value;
     /* RFID is numeric */
     if (entered > 0) {
       document.getElementById("em").value = "";
-      $('#ajaxloading').show();
-      $.getJSON( 'http://signup.hackerdojo.com/api/rfid?id='+entered+'&callback=?', '',
-        function (data) { 
-          $('#ajaxloading').hide();
+      $('#ajaxloading').fadeIn();
+      $.ajax({
+        url: 'http://signup.hackerdojo.com/api/rfid?id='+entered+'&callback=?',
+        dataType: "json",
+        timeout: 14 * 1000,
+        error: function(data) {
+          auto_reset();      
+        },
+        success: function(data) {
+          $('#ajaxloading').fadeOut();
           if (data && data.username) {
             main_screen_turn_on = true;
-            $('#rfidwelcome').show();
+            // window.audio = new Audio("/static/list.mp3");      
+            // window.audio.play();                 
+            $('#rfidwelcome').fadeIn();
             document.getElementById("em").value = data.username + "@hackerdojo.com";
             $('.rfidpic').attr("src",data.gravatar);
             $('.rfidname').html(data.name);
-            // setTimeout('auto_reset();',90000);
           } else {
-            $('#denied').show();
-            setTimeout("auto_reset();",3 * 1000);
+            prepare_for_signin();
+            audio = new Audio("/static/denied.mp3");      
+            audio.play();
+            $('#denied').fadeIn();
+            setTimeout("$('#denied').fadeOut();",3 * 1000);
           }   
-        } 
-      );
+        }
+      });
+        
     }    
     return false;
   } 
-
 } 
 
 function cancel() {
-  $('#ajaxloading').hide();
-  $('#rfidwelcome').hide();
   main_screen_turn_on = false;
-  document.getElementById("em").value = "";
-  document.getElementById("em").focus();
+  auto_reset();
 }
 
 function showStaffButtons() {
 	document.getElementById("staffbuttons").style.display="block";
-    setTimeout("document.getElementById('staffbuttons').style.display='none';",30*1000);
+  setTimeout("$('#staffbuttons').show();",30*1000);
 }
 
 document.onkeypress = stopRKey; 
@@ -89,8 +100,9 @@ function clickmember() {
     return false;
   } else {
      main_screen_turn_on = true;
-     em.value
      $('#rfidwelcome').show();
+     // window.audio = new Audio("/static/list.mp3");      
+     // window.audio.play();                 
      name = em.substring(0,em.indexOf("@hackerdojo.com")).replace("."," ").capitalize();
      gravatar = "http://www.gravatar.com/avatar/" + hex_md5(em);
      $('.rfidpic').attr("src",gravatar);
@@ -98,48 +110,103 @@ function clickmember() {
    }  
 }
 
-function auto_reset() {
-  $('#tos').hide();
-  $('#thanks').hide();
-  $('#denied').hide();
-  $('#privacy').hide();
-  $('#rfidwelcome').hide();
-  $('#ajaxloading').hide();
-  main_screen_turn_on = false;
-  document.getElementById("ttt").value = "";
-  document.getElementById("em").value = "";
-  document.getElementById("em").focus();
-}
-
-function go(x,skip) {
+/* Set the type and proceed with signin */
+function go(x) {
   if (isEmail(document.getElementById("em").value)) {
     document.getElementById("ttt").value = x;
-    if (skip) {
-      $('#rfidwelcome').hide();
-      $('#ajaxloading').show();
-      main_screen_turn_on = false;
-      document.getElementById("f").submit();
-    } else {
-      document.getElementById("tos").style.display = 'block';
-      setTimeout('auto_reset()',5*60*1000);
-    }
+    $('#rfidwelcome').fadeOut();
+    $('#ajaxloading').fadeIn();
+    main_screen_turn_on = false;
+    ok();
   } else {
     alert("Please enter a valid e-mail address");
   }
 }
 
-function ok() {
-  document.getElementById("tos").style.display = 'none';
-  document.getElementById("thanks").style.display = 'block';
+/* Hard reboot */
+function auto_reset() {
+  $('#tos').hide();
+  $('#thanks').fadeOut();
+  $('#denied').fadeOut();
+  $('#privacy').hide();
+  $('#rfidwelcome').fadeOut();
+  $('#ajaxloading').fadeOut();
   main_screen_turn_on = false;
-  setTimeout('document.getElementById("f").submit();',1000);
+  prepare_for_signin();
+}
+
+/* Soft reboot */
+function prepare_for_signin() {
+  $("#staffbuttons").hide();
+  $('#ttt').val("");
+  $('#em').val("");
+  $('#em').focus();
+}
+  
+/* Do the actual signin */  
+function ok() {
+  $("#tos").fadeOut();
+  main_screen_turn_on = false;
+  $('#ajaxloading').show();
+  $.ajax({
+    url: '/signin',
+    dataType: "json",
+    data: {
+      "email":document.getElementById("em").value,
+      "type":document.getElementById("ttt").value
+    },
+    timeout: 14 * 1000,
+    error: function(data) {
+      auto_reset();      
+    },
+    success: function(data) {
+      $('#ajaxloading').fadeOut();
+      $("#thanksmessage").html("<b><nobr>Thanks "+data.name+"!</nobr></b><br/><br/><small>Visit #"+data.signins+"</small>");      
+      if (data.tos) {
+        $('#ajaxloading').hide();
+        $('#tos').fadeIn();
+      } else {        
+        thanks();
+      }
+      prepare_for_signin();
+    }
+  });
+}
+
+/* After a user signs in */
+function thanks() {
+  $("#banner").hide().fadeIn(1500);
+  $("#tos").hide();
+  $("#thanks").fadeIn();
+  window.audio = new Audio("/static/login.mp3");      
+  window.audio.play();
+  increment_counter();
+  setTimeout('$("#thanks").fadeOut(1000);',2*1000);
+}
+
+function increment_counter() {
+  var i = parseInt($("#todaycount").html());
+  if (i>0) {
+    $("#todaycount").html(i+1);
+  }
 }
 
 function isEmail (s) {
   return String(s).search (/^\s*[\w\-\+_]+(\.[\w\-\+_]+)*\@[\w\-\+_]+\.[\w\-\+_]+(\.[\w\-\+_]+)*\s*$/) != -1;
 }
 
+/* Refresh the page every 15 minutes to clean things up, and update banner */
+function refreshPage() {
+  $.ajax({
+    url: '/',
+    success: function(data) {
+      $('#body').html(data);
+    }
+  });
+  auto_reset();
+}
+
 $(document).ready(function() {
-  $("#em").value = "";
-  $("#em").focus();
+  setInterval(refreshPage,15 * 60 * 1000);  
+  auto_reset();
 });

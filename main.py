@@ -11,7 +11,7 @@ from google.appengine.ext import db
 from google.appengine.api import urlfetch
 from google.appengine.api import mail
 from google.appengine.ext.webapp.util import login_required
-from datetime import datetime, timedelta
+from datetime import tzinfo, datetime, timedelta
 import urllib, hashlib, time, random
 from django.utils import simplejson
 import logging, email
@@ -23,8 +23,11 @@ import math
 import pprint
 import string
 import util
+import os
 
 MAX_SIGNIN_TIME = 60 * 60 * 8
+os.environ['TZ'] = 'US/Pacific'
+
 
 def parse_json(data):
   return simplejson.loads(data.replace('/*-secure-','').replace('*/', ''))
@@ -81,6 +84,7 @@ class Signin(db.Model):
     name = string.capwords(email.split('@')[0].replace('.', ' '))
     s = Signin(email=email, type=type, image_url=image, name=name)
     s.put()
+    return s
 
 # Unlike the signin log, this table is one row per e-mail address.
 class SigninRecord(db.Model):
@@ -104,11 +108,17 @@ class SigninRecord(db.Model):
 class SigninHandler(webapp.RequestHandler):
   def get(self):
     email = self.request.get('email')
+    # time.sleep(2)
     type = self.request.get('type')
     if email and type:
-      Signin.signin(email, type)
+      signin = Signin.signin(email, type)
       record = SigninRecord.signin(email, datetime.now())
-      response = {"signins":record.signins}
+      tos = False
+      if record.signins == 1:
+        tos = True
+      # PSUEDO CODE: if record.last_signin < date of last TOS change
+      # PSUEDO CODE:   tos = True
+      response = {"signins":record.signins, "name":signin.name, "tos":tos}
     else:
       response = {"error": "need to specify email and type"}
     self.response.out.write(simplejson.dumps(response))
