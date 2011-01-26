@@ -1,4 +1,6 @@
 import logging, email
+from datetime import tzinfo, datetime, timedelta
+
 
 # This function recreates the SigninRecord table from scratch
 # (May never need to be used again)
@@ -23,3 +25,14 @@ def init_records():
   for email in count:
     main.SigninRecord(email=email, first_signin = first[email], last_signin=last[email], signins = count[email]).put()
   logging.info("Done.")
+
+
+class Pacific(tzinfo): 
+  def utcoffset(self,dt): 
+    return timedelta(hours=-8,minutes=0) 
+  def tzname(self,dt): 
+    return "GMT -8" 
+  def dst(self,dt): 
+    return timedelta(0) 
+    
+    

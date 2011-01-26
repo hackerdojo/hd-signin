@@ -23,11 +23,10 @@ import math
 import pprint
 import string
 import util
+from util import Pacific
 import os
 
 MAX_SIGNIN_TIME = 60 * 60 * 8
-os.environ['TZ'] = 'US/Pacific'
-
 
 def parse_json(data):
   return simplejson.loads(data.replace('/*-secure-','').replace('*/', ''))
@@ -147,12 +146,12 @@ class ExportHandler(webapp.RequestHandler):
 class MainHandler(webapp.RequestHandler):
   def get(self):
     today_db = db.GqlQuery("SELECT * FROM Signin WHERE created >= DATETIME(:earlier_this_morning) ORDER BY created desc LIMIT 1000",
-      earlier_this_morning=(datetime.now().strftime("%Y-%m-%d 08:00:00")))
+      earlier_this_morning=(datetime.now(Pacific()).strftime("%Y-%m-%d 00:00:00")))
     today_count = today_db.count()
     if today_count > 1:
       today_count_signigicant = True
     dayofWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-    oldDate = datetime.now()  
+    oldDate = datetime.now(Pacific())
     day = dayofWeek[datetime.weekday(oldDate)]
     self.response.out.write(template.render('templates/main.html', locals()))
   
@@ -177,8 +176,8 @@ class StaffHandler(webapp.RequestHandler):
 # Used by /log - the user facing log of people that have signed in last 12 hours
 class LogHandler(webapp.RequestHandler):
   def get(self):
-    staff_db = db.GqlQuery("SELECT * FROM Signin WHERE created >= DATETIME(:start) ORDER BY created desc LIMIT 100",
-      start=(datetime.now()-timedelta(days=0.5)).strftime("%Y-%m-%d %H:%M:%S"))
+    staff_db = db.GqlQuery("SELECT * FROM Signin WHERE created >= DATETIME(:earlier_this_morning) ORDER BY created desc LIMIT 500",
+      earlier_this_morning=(datetime.now(Pacific()).strftime("%Y-%m-%d 00:00:00")))
     staff = []
     for s in staff_db:
       if s.type in ["Anonymous","Guest","Event"]:
@@ -202,7 +201,7 @@ class MiniStaffHandler(webapp.RequestHandler):
 class AppreciationEmailHandler(webapp.RequestHandler):
   def get(self):
     staff_members = db.GqlQuery("SELECT * FROM Signin WHERE created >= DATETIME(:start) AND type IN :types ",
-      start=(datetime.now()-timedelta(days=7)).strftime("%Y-%m-%d %H:%M:%S"),types=['StaffKey','StaffNoKey'])
+      start=(datetime.now(Pacific())-timedelta(days=7)).strftime("%Y-%m-%d %H:%M:%S"),types=['StaffKey','StaffNoKey'])
     content = """To Dojo Members:\n\nThanks for helping run the dojo last week!  Our heros included:\n\n""" % locals()
     totals = {}
     emails = []
@@ -223,7 +222,7 @@ class AppreciationEmailHandler(webapp.RequestHandler):
         pass
     content = content + """\nThanks,\nEveryone at the Dojo"""
     if self.request.get('sendemail'):
-      weekof = (datetime.now()-timedelta(days=7)).strftime("%b %e")
+      weekof = (datetime.now(Pacific())-timedelta(days=7)).strftime("%b %e")
       mail.send_mail(sender="Signin Machine <signin@hackerdojo.com>",
                   to="members@hackerdojo.com",
                   subject="Hacker Dojo Member Appreciation - Week of " + weekof,
