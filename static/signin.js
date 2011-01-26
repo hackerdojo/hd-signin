@@ -15,6 +15,13 @@ function capstaff(evt) {
   }  
 }
 
+function autosignin(x) {
+  if (x==1) go('Anonymous');
+  if (x==2) go('Member');
+  if (x==3) go('StaffKey');
+  $('#auto').slideUp();  
+}
+
 function stopRKey(evt) { 
   var evt = (evt) ? evt : ((event) ? event : null); 
   var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null); 
@@ -61,6 +68,12 @@ function stopRKey(evt) {
             document.getElementById("em").value = data.username + "@hackerdojo.com";
             $('.rfidpic').attr("src",data.gravatar);
             $('.rfidname').html(data.name);
+            if (data.auto_signin && data.auto_signin > 0 && data.auto_signin < 4) {
+              $('#auto').slideDown();
+              $('#count').attr("src","/static/countdown.gif");
+              window.auto = setTimeout("autosignin("+data.auto_signin+");",5000);
+            }
+             
           } else {
             prepare_for_signin();
             audio = new Audio("/static/denied.mp3");      
@@ -117,6 +130,10 @@ function go(x) {
     $('#rfidwelcome').fadeOut();
     $('#ajaxloading').fadeIn();
     main_screen_turn_on = false;
+    $('#auto').hide();
+    if (window.auto) {
+      clearTimeout(window.auto);
+    }        
     ok();
   } else {
     alert("Please enter a valid e-mail address");
@@ -129,8 +146,12 @@ function auto_reset() {
   $('#thanks').fadeOut();
   $('#denied').fadeOut();
   $('#privacy').hide();
+  $('#auto').hide();
   $('#rfidwelcome').fadeOut();
   $('#ajaxloading').fadeOut();
+  if (window.auto) {
+    clearTimeout(window.auto);
+  }    
   main_screen_turn_on = false;
   prepare_for_signin();
 }
