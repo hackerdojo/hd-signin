@@ -221,6 +221,9 @@ function refreshPage() {
   $.ajax({
     url: '/',
     success: function(data) {
+      if (window.oldint) {
+        clearTimeout(window.oldint);
+      }      
       $('#body').html(data);
     }
   });
@@ -228,6 +231,6 @@ function refreshPage() {
 }
 
 $(document).ready(function() {
-  setInterval(refreshPage,15 * 60 * 1000);  
+  window.oldint = setInterval(refreshPage,15 *60* 1000);  
   auto_reset();
 });
