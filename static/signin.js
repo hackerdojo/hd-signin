@@ -224,6 +224,9 @@ function refreshPage() {
       if (window.oldint) {
         clearTimeout(window.oldint);
       }      
+      if (window.oldfoc) {
+        clearTimeout(window.oldfoc);
+      }      
       $('#body').html(data);
     }
   });
@@ -232,5 +235,14 @@ function refreshPage() {
 
 $(document).ready(function() {
   window.oldint = setInterval(refreshPage,15 *60* 1000);  
+  window.oldfoc = setInterval('$("#em").focus();',1000);
   auto_reset();
+  
+  $("#em").live('blur', function() {
+    setTimeout('$("#em").focus();',16);
+  });
+  
+          
 });
+
+
