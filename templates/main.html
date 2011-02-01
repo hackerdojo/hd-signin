@@ -128,6 +128,19 @@
 	</h1>
 </div>
 
+<div id="dojodomain" class="corners" style="padding:2em; display:none; color:black; position:absolute; z-index:2; top:15%; left:15%; width:60%; border:2px solid red; background:#faa ">
+  <h2 style="margin-top:0">Please use your @hackerdojo.com address</h2>
+  <ul class="domainbenefits">
+    <li>Every member gets a <code>@hackerdojo.com</code> account
+    <li>Your <code>@hackerdojo.com</code> account is used for all kinds of things at the Dojo: e-mail, RFID keys, event hosting, signin, kudos, etc.
+    <li>You probably already have one in the form of <code>firstname.lastname@hackerdojo.com</code>
+    <li>If you need one, you can get one at <nobr><code>http://signup.hackerdojo.com/upgrade/needaccount</code></nobr>
+  </ul>
+	<p>
+		<a href="#" onclick="$('#dojodomain').fadeOut(); $('#em').focus();">OK</a>
+	</p>
+</div>
+
 <div id="privacy" class="corners" style="padding:1em; display:none; position:absolute; z-index:2; top:25%; left:25%; width:40%; border:2px solid black; background:#dbf2dc; font-size:80% ">
 	<h2>E-mail Privacy</h2>
 	<p>The Dojo will not sell, rent, or give out your e-mail address to
@@ -137,7 +150,7 @@
 		events and other happenings (which of course, you can opt-out of).</p>
 	<p>We hate spam & we're not evil ;)</p>
 	<p>
-		<a href="#" onclick="document.getElementById('privacy').style.display='none'; document.getElementById('em').focus();">Close</a>
+		<a href="#" onclick="$('#privacy').fadeOut(); $('#em').focus();">Close</a>
 	</p>
 </div>
 
@@ -146,7 +159,7 @@
   <h2>Please Sign In</h2>
   E-mail:
   <input id="em" type="text" name="email">
-  <a style="color:green; font-size:9px" href="#" onclick="document.getElementById('privacy').style.display='block';">E-mail Privacy</a>
+  <a style="color:green; font-size:9px" href="#" onclick="$('#privacy').fadeIn();">E-mail Privacy</a>
   <br>
   <input type="button" value="Member" onclick="clickmember()" />
   <input type="button" value="Guest" onclick="go('Guest')" />

@@ -109,7 +109,7 @@ String.prototype.capitalize = function(){
 function clickmember() {
   var em = document.getElementById("em").value;  
   if (em.indexOf("@hackerdojo.com")==-1) {
-    alert("That e-mail address does not match a valid @hackerdojo.com e-mail.");   
+    $("#dojodomain").fadeIn();
     return false;
   } else {
      main_screen_turn_on = true;
