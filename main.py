@@ -50,7 +50,7 @@ class Signin(db.Model):
     for staffer in staffers.fetch(1000):
       td = datetime.now()-staffer.created
       if td.seconds > MAX_SIGNIN_TIME:
-        staffer.active = False;
+        staffer.active = False
         staffer.closed = datetime.now()
         staffer.time_delta = MAX_SIGNIN_TIME
         staffer.put()
@@ -81,11 +81,10 @@ class Signin(db.Model):
     hash = hashlib.md5(email).hexdigest()
     image = 'http://0.gravatar.com/avatar/%s' % hash
     name = string.capwords(email.split('@')[0].replace('.', ' '))
-    # prevents double signin
-    # figure that this code might be toxic if we're using Signin objects
-    # to figure out staff time etc
-    #previous_signin = db.GqlQuery("SELECT * FROM Signin WHERE email = '%s' AND active = true" % email).get()
-    #if previous_signin is not None:
+    # prevents double signin...
+    previous_signin = db.GqlQuery("SELECT * FROM Signin WHERE email = '%s' AND active = true" % email).get()
+    if previous_signin is not None:
+      cls.deactivate_staffer(email)
     #  previous_signin.delete() # delete old signin
     s = Signin(email=email, type=type, image_url=image, name=name)
     s.put()
