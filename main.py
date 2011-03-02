@@ -81,6 +81,10 @@ class Signin(db.Model):
     hash = hashlib.md5(email).hexdigest()
     image = 'http://0.gravatar.com/avatar/%s' % hash
     name = string.capwords(email.split('@')[0].replace('.', ' '))
+    # prevents double signin
+    previous_signin = db.GqlQuery("SELECT * FROM Signin WHERE email = '%s' AND active = true" % email).get()
+    if previous_signin is not None:
+      previous_signin.delete() # delete old signin
     s = Signin(email=email, type=type, image_url=image, name=name)
     s.put()
     return s
