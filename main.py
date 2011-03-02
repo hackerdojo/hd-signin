@@ -85,7 +85,6 @@ class Signin(db.Model):
     previous_signin = db.GqlQuery("SELECT * FROM Signin WHERE email = '%s' AND active = true" % email).get()
     if previous_signin is not None:
       cls.deactivate_staffer(email)
-    #  previous_signin.delete() # delete old signin
     s = Signin(email=email, type=type, image_url=image, name=name)
     s.put()
     return s
