@@ -82,9 +82,9 @@ class Signin(db.Model):
     image = 'http://0.gravatar.com/avatar/%s' % hash
     name = string.capwords(email.split('@')[0].replace('.', ' '))
     # prevents double signin...
-    previous_signin = db.GqlQuery("SELECT * FROM Signin WHERE email = '%s' AND active = true" % email).get()
-    if previous_signin is not None:
-      cls.deactivate_staffer(email)
+    #previous_signin = db.GqlQuery("SELECT * FROM Signin WHERE email = '%s' AND active = true" % email).get()
+    #if previous_signin is not None:
+    #  cls.deactivate_staffer(email)
     s = Signin(email=email, type=type, image_url=image, name=name)
     s.put()
     return s
