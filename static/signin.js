@@ -46,7 +46,8 @@ function stopRKey(evt) {
   }
   
   if ((code == 13) && (node.type=="text"))  {    
-    entered = document.getElementById("em").value;
+    entered = document.getElementById("em").value.replace(/^\;/, "").replace(/\?$/, "");
+    
     /* RFID is numeric */
     if (entered > 0) {
       document.getElementById("em").value = "";
