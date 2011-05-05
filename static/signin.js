@@ -1,16 +1,17 @@
 var main_screen_turn_on = false;
 
+
 function capstaff(evt) { 
   var evt = (evt) ? evt : ((event) ? event : null); 
   if (evt.keyCode) code = evt.keyCode;
   else if (evt.which) code = evt.which;  
-  var em = document.getElementById("em").value;  
+  var em = $("input[name=email]").val();  
   if (code==45 || code==18) {
     showStaffButtons();
     return false;
   }
   if (code==9 && em.length > 0 && em.indexOf("@") == -1) {
-    document.getElementById("em").value = em+"@hackerdojo.com";
+    $("input[name=email]").val(em+"@hackerdojo.com");
     return false;
   }  
 }
@@ -25,7 +26,7 @@ function autosignin(x) {
 function stopRKey(evt) { 
   var evt = (evt) ? evt : ((event) ? event : null); 
   var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null); 
-  var em = document.getElementById("em").value;
+  var em = $("input[name=email]").val();
   
   if (evt.keyCode==45 || evt.keyCode==18) {
     showStaffButtons();
@@ -46,11 +47,11 @@ function stopRKey(evt) {
   }
   
   if ((code == 13) && (node.type=="text"))  {    
-    entered = document.getElementById("em").value.replace(/^\;/, "").replace(/\?$/, "");
+    entered = $("input[name=email]").val().replace(/^\;/, "").replace(/\?$/, "");
     
     /* RFID is numeric */
     if (entered > 0) {
-      document.getElementById("em").value = "";
+      $("input[name=email]").val("");
       $('#ajaxloading').fadeIn();
       $.ajax({
         url: 'http://signup.hackerdojo.com/api/rfid?id='+entered+'&callback=?',
@@ -66,7 +67,7 @@ function stopRKey(evt) {
             // window.audio = new Audio("/static/list.mp3");      
             // window.audio.play();                 
             $('#rfidwelcome').fadeIn();
-            document.getElementById("em").value = data.username + "@hackerdojo.com";
+            $("input[name=email]").val(data.username + "@hackerdojo.com");
             $('.rfidpic').attr("src",data.gravatar);
             $('.rfidname').html(data.name);
             if (data.auto_signin && data.auto_signin > 0 && data.auto_signin < 4) {
@@ -108,7 +109,7 @@ String.prototype.capitalize = function(){
 };
   
 function clickmember() {
-  var em = document.getElementById("em").value;  
+  var em = $("input[name=email]").val();  
   if (em.indexOf("@hackerdojo.com")==-1) {
     $("#dojodomain").fadeIn();
     return false;
@@ -126,7 +127,7 @@ function clickmember() {
 
 /* Set the type and proceed with signin */
 function go(x) {
-  if (isEmail(document.getElementById("em").value)) {
+  if (isEmail($("input[name=email]").val())) {
     document.getElementById("ttt").value = x;
     $('#rfidwelcome').fadeOut();
     $('#ajaxloading').fadeIn();
@@ -162,6 +163,7 @@ function prepare_for_signin() {
   $("#staffbuttons").hide();
   $('#ttt').val("");
   $('#em').val("");
+  $("input[type=text]").val("");
   $('#em').focus();
 }
   
@@ -173,10 +175,7 @@ function ok() {
   $.ajax({
     url: '/signin',
     dataType: "json",
-    data: {
-      "email":document.getElementById("em").value,
-      "type":document.getElementById("ttt").value
-    },
+    data: $('#ajax_form').serialize(),
     timeout: 14 * 1000,
     error: function(data) {
       auto_reset();      

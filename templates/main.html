@@ -155,19 +155,38 @@
 </div>
 
 <center>
-  <img style="margin:1.5em" src="/static/logo.png" width="690" height="244" />
+  <form id="ajax_form" onsubmit="return false;">
+  {% if current_event %}
+    <table><tr>
+    <td><img style="margin:1.5em" src="{{current_event.logo_url}}" width="455" height="161" /></td>
+    <td>at</td>
+    <td><img style="margin:1.5em" src="/static/logo.png" width="455" height="161" /></td>
+    </tr></table>
+  {% else %}
+    <img style="margin:1.5em" src="/static/logo.png" width="690" height="244" />
+  {% endif %}
+  
   <h2>Please Sign In</h2>
+  
+  {% if current_event.custom_html %}
+    {{current_event.custom_html}}
+    <br>
+    <input type="button" value="Event Attendee" onclick="go('Event')" />  
+    <input type="button" value="Hacker Dojo Member" onclick="clickmember()" />
+  {% else %}
   E-mail:
-  <input id="em" type="text" name="email">
-  <a style="color:green; font-size:9px" href="#" onclick="$('#privacy').fadeIn();">E-mail Privacy</a>
-  <br>
-  <input type="button" value="Member" onclick="clickmember()" />
-  <input type="button" value="Guest" onclick="go('Guest')" />
-  <input type="button" value="Event Attendee" onclick="go('Event')" />  
-  <div id="staffbuttons" style="display:none">
-  <input type=button value="Staff" onclick="go('StaffKey')" />
-  </div>
+    <input id="em" type="text" name="email">
+    <a style="color:green; font-size:9px" href="#" onclick="$('#privacy').fadeIn();">E-mail Privacy</a>
+    <br>
+    <input type="button" value="Member" onclick="clickmember()" />
+    <input type="button" value="Guest" onclick="go('Guest')" />
+    <input type="button" value="Event Attendee" onclick="go('Event')" />  
+    <div id="staffbuttons" style="display:none">
+    <input type=button value="Staff" onclick="go('StaffKey')" />
+    </div>
+  {% endif %}
   <input id="ttt" type="hidden" name="type" value="" />
+  </form>
 </center>
 
 <audio autobuffer nocontrols>

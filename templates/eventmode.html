@@ -1,0 +1,28 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>Event Mode</title>
+<style>
+input[type="text"], textarea {width:900px}
+</style>
+</head>
+
+<body>
+
+<h1>Event Mode Config</h1>
+
+<p>The current time is: {{now}}</p>
+
+<form method="POST">
+  <table>
+    <tr><td align="right">Event Name:</td><td><input type="text" name="event_name" value="{{current_event.event_name|escape}}"></td></tr>
+    <tr><td align="right">Logo URL:</td><td><input type="text" name="logo_url" value="{{current_event.logo_url|escape}}"></td></tr>
+    <tr><td align="right">From:</td><td><input type="text" name="from_time" value="{{current_event.from_time}}"></td></tr>
+    <tr><td align="right">To:</td><td><input type="text" name="to_time" value="{{current_event.to_time}}"></td></tr>
+    <tr><td align="right">HTTP Post URL:</td><td><input type="text" name="webhook_url" value="{{current_event.webhook_url|escape}}"></td></tr>
+    <tr><td align="right">Custom HTML:</td><td><textarea rows="12" name="custom_html">{{current_event.custom_html|escape}}</textarea></td></tr>
+    <tr><td align="right" colspan="2"><input type="submit" value="Save"></td></tr>
+  </table>  
+</form>
+  
+</body>

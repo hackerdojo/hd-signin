@@ -31,6 +31,48 @@ MAX_SIGNIN_TIME = 60 * 60 * 8
 def parse_json(data):
   return simplejson.loads(data.replace('/*-secure-','').replace('*/', ''))
 
+# An event. Usually contains zero rows ("regular mode") or ONE row ("event mode")
+class Event(db.Model):
+  event_name = db.StringProperty()
+  logo_url = db.StringProperty()
+  from_time = db.DateTimeProperty()
+  to_time = db.DateTimeProperty()
+  webhook_url = db.StringProperty()
+  custom_html = db.TextProperty()
+
+  @classmethod
+  def get_current_event(cls):
+    current_event = cls.all().get()
+    return current_event
+
+  @classmethod
+  def delete_current_event(cls):
+    current_event = cls.all().get()
+    if current_event:
+      current_event.delete()
+  
+# Configure a special event
+class EventModeHandler(webapp.RequestHandler):
+  def get(self):
+    current_event = Event.get_current_event()
+    now = datetime.now().strftime("%Y-%m-%d %X")
+    self.response.out.write(template.render('templates/eventmode.html', locals()))
+
+  def post(self):
+    Event.delete_current_event()
+    new_event = Event(
+      event_name=self.request.get('event_name'),
+      logo_url=self.request.get('logo_url'),
+      from_time=datetime.strptime(self.request.get("from_time"), "%Y-%m-%d %X"),
+      to_time= datetime.strptime(self.request.get("to_time"), "%Y-%m-%d %X"),
+      webhook_url=self.request.get('webhook_url'),
+      custom_html=self.request.get('custom_html')
+    )
+    new_event.put()
+    self.redirect('/eventmode')
+    
+    
+
 # A log of all signins.  One row per signin.
 class Signin(db.Model):
   email = db.StringProperty(required=True)
@@ -127,6 +169,13 @@ class SigninHandler(webapp.RequestHandler):
       response = {"signins":record.signins, "name":signin.name, "tos":tos}
     else:
       response = {"error": "need to specify email and type"}
+    current_event = Event.get_current_event()
+    if current_event:
+      urlfetch.fetch(url=current_event.webhook_url,
+                        payload=self.request.query_string,
+                        method=urlfetch.POST,
+                        headers={'Content-Type': 'application/x-www-form-urlencoded'})
+      
     self.response.out.write(simplejson.dumps(response))
 
 # Initializes SigninRecord database (see util.py)
@@ -160,6 +209,9 @@ class MainHandler(webapp.RequestHandler):
     dayofWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     oldDate = datetime.now(Pacific())
     day = dayofWeek[datetime.weekday(oldDate)]
+    event = Event.get_current_event()
+    if datetime.now()>event.from_time and datetime.now() < event.to_time:
+      current_event = event
     self.response.out.write(template.render('templates/main.html', locals()))
   
   def post(self):
@@ -339,6 +391,7 @@ def main():
     application = webapp.WSGIApplication([
         ('/', MainHandler), 
         (r'^/_ah/mail/there.*', MailHandler),
+    ('/eventmode', EventModeHandler),
     ('/ministaff', MiniStaffHandler),
     ('/signin', SigninHandler),
     ('/staff', StaffHandler),
