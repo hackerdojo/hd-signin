@@ -16,13 +16,30 @@ input[type="text"], textarea {width:900px}
 <form method="POST">
   <table>
     <tr><td align="right">Event Name:</td><td><input type="text" name="event_name" value="{{current_event.event_name|escape}}"></td></tr>
-    <tr><td align="right">Logo URL:</td><td><input type="text" name="logo_url" value="{{current_event.logo_url|escape}}"></td></tr>
-    <tr><td align="right">From:</td><td><input type="text" name="from_time" value="{{current_event.from_time}}"></td></tr>
-    <tr><td align="right">To:</td><td><input type="text" name="to_time" value="{{current_event.to_time}}"></td></tr>
+    <tr><td align="right">Logo URL:</td><td><input type="text" name="logo_url" value="{{current_event.logo_url|escape}}"></td><td>455x161 only</td></tr>
+    <tr><td align="right">From:</td><td><input placeholder="{{now}}" type="text" name="from_time" value="{{current_event.from_time}}"></td></tr>
+    <tr><td align="right">To:</td><td><input placeholder="{{now}}" type="text" name="to_time" value="{{current_event.to_time}}"></td></tr>
     <tr><td align="right">HTTP Post URL:</td><td><input type="text" name="webhook_url" value="{{current_event.webhook_url|escape}}"></td></tr>
     <tr><td align="right">Custom HTML:</td><td><textarea rows="12" name="custom_html">{{current_event.custom_html|escape}}</textarea></td></tr>
     <tr><td align="right" colspan="2"><input type="submit" value="Save"></td></tr>
   </table>  
 </form>
+
+<h2>Sample code for "Custom HTML"</h2>
+<p><b>Requirement</b>: at least one input with name of "email".</p>
+<pre>
+&lt;table&gt;
+  &lt;tr&gt;
+    &lt;td&gt;First name:&lt;/td&gt;&lt;td&gt;&lt;input type="text" name="first_name"&gt;&lt;/td&gt;
+    &lt;td&gt;Last name:&lt;/td&gt;&lt;td&gt;&lt;input type="text" name="first_name"&gt;&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;&lt;td colspan=1&gt;E-mail:&lt;/td&gt;&lt;td colspan=3&gt;&lt;input type="text" name="email" style="width:90%"&gt;&lt;/td&gt;&lt;/tr&gt;
+  &lt;tr&gt;&lt;td cokspan=1&gt;Tags:&lt;/td&gt;&lt;td colspan=3&gt;&lt;input type="text" name="tags" style="width:90%"&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
+
+&lt;style&gt;
+  input {font-size:80%; margin:.3em}
+&lt;/style&gt;
+</pre>
   
 </body>
