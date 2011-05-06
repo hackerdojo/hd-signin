@@ -164,7 +164,7 @@ function prepare_for_signin() {
   $('#ttt').val("");
   $('#em').val("");
   $("input[type=text]").val("");
-  $('#em').focus();
+  $('input[name=email]').focus();
 }
   
 /* Do the actual signin */  
@@ -203,6 +203,7 @@ function thanks() {
   window.audio.play();
   increment_counter();
   setTimeout('$("#thanks").fadeOut(1000);',2*1000);
+  $('input[name=email]').focus();
 }
 
 function increment_counter() {
