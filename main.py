@@ -170,7 +170,7 @@ class SigninHandler(webapp.RequestHandler):
     else:
       response = {"error": "need to specify email and type"}
     current_event = Event.get_current_event()
-    if current_event:
+    if current_event and datetime.now()>current_event.from_time and datetime.now() < current_event.to_time:
       urlfetch.fetch(url=current_event.webhook_url,
                         payload=self.request.query_string,
                         method=urlfetch.POST,
