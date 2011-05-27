@@ -210,7 +210,7 @@ class MainHandler(webapp.RequestHandler):
     oldDate = datetime.now(Pacific())
     day = dayofWeek[datetime.weekday(oldDate)]
     event = Event.get_current_event()
-    if datetime.now()>event.from_time and datetime.now() < event.to_time:
+    if event and datetime.now()>event.from_time and datetime.now() < event.to_time:
       current_event = event
     self.response.out.write(template.render('templates/main.html', locals()))
   
