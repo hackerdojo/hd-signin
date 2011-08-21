@@ -283,7 +283,7 @@ class AppreciationEmailHandler(webapp.RequestHandler):
     if self.request.get('sendemail'):
       weekof = (datetime.now(Pacific())-timedelta(days=7)).strftime("%b %e")
       mail.send_mail(sender="Signin Machine <signin@hackerdojo.com>",
-                  to="members@hackerdojo.com",
+                  to="announcements@hackerdojo.com",
                   subject="Hacker Dojo Member Appreciation - Week of " + weekof,
                   body=content)
     self.response.out.write(content)
