@@ -71,8 +71,31 @@ class EventModeHandler(webapp.RequestHandler):
     new_event.put()
     self.redirect('/eventmode')
     
-    
 
+class DailyCount(db.Model):
+  day = db.DateProperty(required=True)
+  count = db.IntegerProperty(required=True)
+    
+  @classmethod
+  def get(cls):
+    count_rec = cls.all().filter('day =', datetime.now(Pacific()).date()).get()
+    if count_rec:
+        count = count_rec.count
+    else:
+        count = 0
+    return count
+
+  @classmethod
+  def increment_and_get(cls):
+    count_rec = cls.all().filter('day =', datetime.now(Pacific()).date()).get()
+    if count_rec:
+        count_rec.count = count_rec.count + 1
+    else:
+        count_rec = DailyCount(day=datetime.now(Pacific()).date(),count=1)
+    count_rec.put()
+    return count_rec.count  
+
+    
 # A log of all signins.  One row per signin.
 class Signin(db.Model):
   email = db.StringProperty(required=True)
@@ -131,6 +154,7 @@ class Signin(db.Model):
       except:
         logging.info("Failed deactivating old Signin object.")
     s = Signin(email=email, type=type, image_url=image, name=name)
+    DailyCount.increment_and_get()    
     s.put()
     return s
 
@@ -195,15 +219,13 @@ class CountHandler(webapp.RequestHandler):
 # Exports e-mail addresses (usually disabled)
 class ExportHandler(webapp.RequestHandler):
   def get(self):
-    for e in Signin.all():
+    for e in SigninRecord.all():
       self.response.out.write(e.email+"\n")
 
 # Renders the main page      
 class MainHandler(webapp.RequestHandler):
   def get(self):
-    today_db = db.GqlQuery("SELECT * FROM Signin WHERE created >= DATETIME(:earlier_this_morning) ORDER BY created desc LIMIT 1000",
-      earlier_this_morning=(datetime.now(Pacific()).strftime("%Y-%m-%d 00:00:00")))
-    today_count = today_db.count()
+    today_count = DailyCount.get()
     if today_count > 1:
       today_count_signigicant = True
     dayofWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
