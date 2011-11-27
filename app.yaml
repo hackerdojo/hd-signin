@@ -6,7 +6,12 @@ api_version: 1
 inbound_services:
 - mail
   
+builtins:
+- appstats: on
+  
 handlers:
+- url: /stats.*
+  script: $PYTHON_LIB/google/appengine/ext/appstats/ui.py
 - url: /static
   static_dir: static
 - url: /_ah/queue/deferred

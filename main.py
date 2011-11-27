@@ -427,7 +427,7 @@ def main():
     ('/appreciationemail', AppreciationEmailHandler),
         ('/staffjson', JSONHandler),
         ], debug=True)
-    wsgiref.handlers.CGIHandler().run(application)
+    run_wsgi_app(application)
    
 if __name__ == '__main__':
     main()
