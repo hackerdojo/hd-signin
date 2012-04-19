@@ -100,7 +100,7 @@ function stopRKey(evt) {
       charge(cc,month,year); 
       return;     
     }
-    if (m = raw.match(/^[;%]E.+\?/)) {
+    if (m = raw.match(/^[;%]E.*\?/)) {
       // Error
       auto_reset();      
        $('#ccerror').fadeIn();
@@ -182,7 +182,7 @@ function clickmember() {
      // window.audio = new Audio("/static/list.mp3");      
      // window.audio.play();                 
      name = em.substring(0,em.indexOf("@hackerdojo.com")).replace("."," ").capitalize();
-     gravatar = "http://www.gravatar.com/avatar/" + hex_md5(em);
+     gravatar = "https://secure.gravatar.com/avatar/" + hex_md5(em);
      $('.rfidpic').attr("src",gravatar);
      $('.rfidname').html(name);
    }  

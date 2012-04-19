@@ -384,7 +384,7 @@ class ChargeHandler(webapp.RequestHandler):
                           code = ''    
                           )
         gateway = AimGateway(auth_net_login_id, auth_net_trans_key)
-        gateway.use_test_mode = True
+        gateway.use_test_mode = False
         gateway.use_test_url = False
         response = gateway.sale(10.00, card)
         self.response.out.write(simplejson.dumps({"trans_id":response.trans_id, 
