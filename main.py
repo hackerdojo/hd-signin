@@ -384,10 +384,14 @@ class ChargeHandler(webapp.RequestHandler):
                           code = ''    
                           )
         gateway = AimGateway(auth_net_login_id, auth_net_trans_key)
-        gateway.use_test_mode = False
+        gateway.use_test_mode = True
         gateway.use_test_url = False
-        response = gateway.sale(10.00, card)
+        amount = float(int(random.random()*2000))/100
+        dollar_amount = '$%.2f' % amount
+        response = gateway.sale(amount, card)
         self.response.out.write(simplejson.dumps({"trans_id":response.trans_id, 
+                                                  "amount": amount,
+                                                 "dollar_amount": dollar_amount,
                                                   "status":response.status_strings[response.status], 
                                                   "status_code": response.status,
                                                  "message": response.message}))
@@ -439,6 +443,7 @@ def main():
     ('/ministaff', MiniStaffHandler),
     ('/signin', SigninHandler),
     ('/staff', StaffHandler),                
+    ('/api/charge', ChargeHandler),                
     ('/sstats/?', StatHandler),
     ('/sstats/(.+)', StatsHandler),
     ('/log', LogHandler),

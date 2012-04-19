@@ -46,9 +46,10 @@ function charge(cc,month,year) {
      console.log(data);
      if (data.status_code==1) {
        $('#ajaxloading').fadeOut();
+       $('#ccamount').html(data.dollar_amount);
        $('#ccthanksmessage').html(data.message+" #"+data.trans_id);
        $('#ccthanks').fadeIn();
-       setTimeout("$('#ccthanks').fadeOut();",3 * 1000);
+       setTimeout("$('#ccthanks').fadeOut();",6 * 1000);
      } else {
         $('#ccerrormessage').html(data.message);
         $('#ajaxloading').hide();
