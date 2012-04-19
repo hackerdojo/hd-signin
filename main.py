@@ -25,6 +25,9 @@ import string
 import util
 from util import Pacific
 import os
+from quix.pay.gateway.authorizenet import AimGateway
+from quix.pay.transaction import CreditCard
+from keys import auth_net_login_id, auth_net_trans_key
 
 MAX_SIGNIN_TIME = 60 * 60 * 8
 
@@ -370,6 +373,25 @@ class StatsHandler(webapp.RequestHandler):
           self.response.out.write("0")
       self.response.out.write("\n")
 
+class ChargeHandler(webapp.RequestHandler):
+    def get(self):
+        card = CreditCard(
+                          number = self.request.get('cc'),
+                          month = self.request.get('month'),
+                          year = "20"+self.request.get('year'),
+                          first_name = '',
+                          last_name = '',
+                          code = ''    
+                          )
+        gateway = AimGateway(auth_net_login_id, auth_net_trans_key)
+        gateway.use_test_mode = True
+        gateway.use_test_url = False
+        response = gateway.sale(10.00, card)
+        self.response.out.write(simplejson.dumps({"trans_id":response.trans_id, 
+                                                  "status":response.status_strings[response.status], 
+                                                  "status_code": response.status,
+                                                 "message": response.message}))
+
 # Used by /staffjson (not sure what uses it)
 class JSONHandler(webapp.RequestHandler):
   def get(self):
@@ -416,8 +438,8 @@ def main():
     ('/eventmode', EventModeHandler),
     ('/ministaff', MiniStaffHandler),
     ('/signin', SigninHandler),
-    ('/staff', StaffHandler),
     ('/open', OpenHandler),
+    ('/api/charge', ChargeHandler),
     ('/sstats/?', StatHandler),
     ('/sstats/(.+)', StatsHandler),
     ('/log', LogHandler),

@@ -128,6 +128,18 @@
 	</h1>
 </div>
 
+<div id="ccerror" class="corners" style="padding:4em; display:none; color:black; position:absolute; z-index:2; top:35%; left:25%; width:40%; border:2px solid red; background:#faa ">
+	<h1><center>Credit Card Error</center></h1>
+  <h3><p style="text-align:center" id="ccerrormessage">&nbsp;</p></h3>
+	</h1>
+</div>
+
+<div id="ccthanks" class="corners" style="padding:2em; display:none; position:absolute; z-index:2; top:35%; left:29%; width:35%; border:2px solid #227b1b; background:#b5e5b2 ">
+  <img src="/static/check.png" height="130" width="130" align="left" style="margin-right:1em">
+	<p style="text-align:center" id="thanksmessage">Thank You For Your $10 Donation</p>
+	<p style="text-align:center; font-weight:normal; font-size:85%" id="ccthanksmessage">&nbsp;</p>
+</div>
+
 <div id="dojodomain" class="corners" style="padding:2em; display:none; color:black; position:absolute; z-index:2; top:15%; left:15%; width:60%; border:2px solid red; background:#faa ">
   <h2 style="margin-top:0">Please use your @hackerdojo.com address</h2>
   <ul class="domainbenefits">
@@ -175,7 +187,7 @@
     <input type="button" value="Hacker Dojo Member" onclick="clickmember()" />
   {% else %}
   E-mail:
-    <input id="em" type="text" name="email">
+    <input id="em" type="text" name="email" autocomplete="off" >
     <a style="color:green; font-size:9px" href="#" onclick="$('#privacy').fadeIn();">E-mail Privacy</a>
     <br>
     <input type="button" value="Member" onclick="clickmember()" />

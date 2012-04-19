@@ -23,6 +23,42 @@ function autosignin(x) {
   $('#auto').slideUp();  
 }
 
+
+function charge(cc,month,year) {
+ $("input[name=email]").val("");
+ $('#ajaxloading').fadeIn();
+ $.ajax({
+   url: '/api/charge?cc='+cc+'&month='+month+'&year='+year,
+   dataType: "json",
+   timeout: 14 * 1000,
+   error: function(data) {
+     auto_reset();      
+     if (data.message) {
+       $('#ccerrormessage').html(data.message);
+     } else {
+       $('#ccerrormessage').html("");
+     }
+     $('#ajaxloading').hide();
+     $('#ccerror').fadeIn();
+     setTimeout("$('#ccerror').fadeOut();",3 * 1000);
+   },
+   success: function(data) {
+     console.log(data);
+     if (data.status_code==1) {
+       $('#ajaxloading').fadeOut();
+       $('#ccthanksmessage').html(data.message+" #"+data.trans_id);
+       $('#ccthanks').fadeIn();
+       setTimeout("$('#ccthanks').fadeOut();",3 * 1000);
+     } else {
+        $('#ccerrormessage').html(data.message);
+        $('#ajaxloading').hide();
+        $('#ccerror').fadeIn();
+        setTimeout("$('#ccerror').fadeOut();",3 * 1000);
+     }
+   }
+  });
+}
+      
 function stopRKey(evt) { 
   var evt = (evt) ? evt : ((event) ? event : null); 
   var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null); 
@@ -47,8 +83,35 @@ function stopRKey(evt) {
   }
   
   if ((code == 13) && (node.type=="text"))  {    
-    entered = $("input[name=email]").val().replace(/^\;/, "").replace(/\?$/, "");
     
+    raw = $("input[name=email]").val();
+    
+    if (m = raw.match(/^;([0-9]{16})=([0-9]{2})([0-9]{2})[0-9]{11}\?/)) {
+      var month = m[3];
+      var year = m[2];
+      var cc = m[1];
+      charge(cc,month,year);
+      return;
+    }
+    if (m = raw.match(/^%B([0-9]{16})\^.+\^([0-9]{2})([0-9]{2}).+\?/)) {
+      var month = m[3];
+      var year = m[2];
+      var cc = m[1];
+      charge(cc,month,year); 
+      return;     
+    }
+    if (m = raw.match(/^[;%]E.+\?/)) {
+      // Error
+      auto_reset();      
+       $('#ccerror').fadeIn();
+       $('#ccerrormessage').html("");
+       setTimeout("$('#ccerror').fadeOut();",3 * 1000);
+       return;      
+    }    
+
+    
+    entered = $("input[name=email]").val().replace(/^\;/, "").replace(/\?$/, ""); 
+   
     /* RFID is numeric */
     if (entered > 0) {
       $("input[name=email]").val("");
