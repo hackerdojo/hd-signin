@@ -384,7 +384,7 @@ class ChargeHandler(webapp.RequestHandler):
                           code = ''    
                           )
         gateway = AimGateway(auth_net_login_id, auth_net_trans_key)
-        gateway.use_test_mode = True
+        gateway.use_test_mode = False
         gateway.use_test_url = False
         amount = float(int(random.random()*2000))/100
         dollar_amount = '$%.2f' % amount
