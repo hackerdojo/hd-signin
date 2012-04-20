@@ -24,12 +24,12 @@ function autosignin(x) {
 }
 
 
-function charge(cc,month,year) {
+function charge(cc,month,year,first,last) {
  $("input[name=email]").val("");
  $('#ajaxloading').fadeIn();
  $.ajax({
    url: '/api/charge',
-   data: 'cc='+cc+'&month='+month+'&year='+year,
+   data: 'cc='+cc+'&month='+month+'&year='+year+'&first_name='+first+'&last_name='+last,
    dataType: "json",
    type: "post",
    timeout: 14 * 1000,
@@ -92,14 +92,16 @@ function stopRKey(evt) {
       var month = m[3];
       var year = m[2];
       var cc = m[1];
-      charge(cc,month,year);
+      charge(cc,month,year,"","");
       return;
     }
-    if (m = raw.match(/^%B([0-9]{16})\^.+\^([0-9]{2})([0-9]{2}).+\?/)) {
-      var month = m[3];
-      var year = m[2];
+    if (m = raw.match(/^%B([0-9]{16})\^(.+)\/(.+)\^([0-9]{2})([0-9]{2}).+\?/)) {
+      var month = m[5];
+      var year = m[4];
+      var first = m[3];
+      var last = m[2];
       var cc = m[1];
-      charge(cc,month,year); 
+      charge(cc,month,year, first, last); 
       return;     
     }
     if (m = raw.match(/^[;%]E.*\?/)) {

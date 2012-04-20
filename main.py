@@ -34,6 +34,14 @@ MAX_SIGNIN_TIME = 60 * 60 * 8
 def parse_json(data):
   return simplejson.loads(data.replace('/*-secure-','').replace('*/', ''))
 
+class Donation(db.Model):
+  amount = db.FloatProperty()
+  donation_time = db.DateTimeProperty(auto_now_add=True)
+  transaction_id = db.StringProperty()
+  name = db.StringProperty()
+  status = db.StringProperty()
+  status_code = db.IntegerProperty()
+
 # An event. Usually contains zero rows ("regular mode") or ONE row ("event mode")
 class Event(db.Model):
   event_name = db.StringProperty()
@@ -375,26 +383,31 @@ class StatsHandler(webapp.RequestHandler):
 
 class ChargeHandler(webapp.RequestHandler):
     def post(self):
+        first_name = self.request.get('first_name')
+        last_name = self.request.get('last_name')
         card = CreditCard(
                           number = self.request.get('cc'),
                           month = self.request.get('month'),
                           year = "20"+self.request.get('year'),
-                          first_name = '',
-                          last_name = '',
+                          first_name = first_name,
+                          last_name = last_name,
                           code = ''    
                           )
+        name = first_name + " " + last_name
         gateway = AimGateway(auth_net_login_id, auth_net_trans_key)
         gateway.use_test_mode = False
         gateway.use_test_url = False
         amount = float(int(random.random()*2000))/100
         dollar_amount = '$%.2f' % amount
         response = gateway.sale(amount, card)
-        self.response.out.write(simplejson.dumps({"trans_id":response.trans_id, 
+        d = Donation(amount=amount, transaction_id=response.trans_id, status=response.status_strings[response.status], status_code=response.status, name=name)
+        d.put()
+        self.response.out.write(simplejson.dumps({"trans_id": response.trans_id, 
                                                   "amount": amount,
-                                                 "dollar_amount": dollar_amount,
-                                                  "status":response.status_strings[response.status], 
+                                                  "dollar_amount": dollar_amount,
+                                                  "status": response.status_strings[response.status], 
                                                   "status_code": response.status,
-                                                 "message": response.message}))
+                                                  "message": response.message}))
 
 # Used by /staffjson (not sure what uses it)
 class JSONHandler(webapp.RequestHandler):
