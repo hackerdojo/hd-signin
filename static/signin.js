@@ -28,8 +28,10 @@ function charge(cc,month,year) {
  $("input[name=email]").val("");
  $('#ajaxloading').fadeIn();
  $.ajax({
-   url: '/api/charge?cc='+cc+'&month='+month+'&year='+year,
+   url: '/api/charge',
+   data: 'cc='+cc+'&month='+month+'&year='+year,
    dataType: "json",
+   type: "post",
    timeout: 14 * 1000,
    error: function(data) {
      auto_reset();      
@@ -43,7 +45,6 @@ function charge(cc,month,year) {
      setTimeout("$('#ccerror').fadeOut();",3 * 1000);
    },
    success: function(data) {
-     console.log(data);
      if (data.status_code==1) {
        $('#ajaxloading').fadeOut();
        $('#ccamount').html(data.dollar_amount);

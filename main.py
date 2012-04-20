@@ -374,7 +374,7 @@ class StatsHandler(webapp.RequestHandler):
       self.response.out.write("\n")
 
 class ChargeHandler(webapp.RequestHandler):
-    def get(self):
+    def post(self):
         card = CreditCard(
                           number = self.request.get('cc'),
                           month = self.request.get('month'),
