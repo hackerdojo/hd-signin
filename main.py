@@ -397,6 +397,8 @@ class ChargeHandler(webapp.RequestHandler):
         gateway = AimGateway(auth_net_login_id, auth_net_trans_key)
         gateway.use_test_mode = False
         gateway.use_test_url = False
+        if "KLUG" in last_name:
+          gateway.use_test_mode = True
         amount = float(int(random.random()*2000))/100
         dollar_amount = '$%.2f' % amount
         response = gateway.sale(amount, card)
