@@ -46,6 +46,8 @@ function charge(cc,month,year,first,last) {
    },
    success: function(data) {
      if (data.status_code==1) {
+       window.audio = new Audio("/static/money.mp3");      
+       window.audio.play();  
        $('#ajaxloading').fadeOut();
        $('#ccamount').html(data.dollar_amount);
        $('#ccthanksmessage').html(data.message+" #"+data.trans_id);
