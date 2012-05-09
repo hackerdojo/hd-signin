@@ -167,6 +167,10 @@ class Signin(db.Model):
     s = Signin(email=email, type=type, image_url=image, name=name)
     DailyCount.increment_and_get()    
     s.put()
+    if "mark.hutsell" in email or "some.other.evilguy" in email:
+        mail.send_mail(sender="Signin Machine <signin@hackerdojo.com>", to="Emergency Paging System <page@hackerdojo.com>",
+           subject="Sign-in: " + email, body="Sign in")
+        urlfetch.fetch("http://www.dustball.com/call/call.php?str=Sign+in+"+email)
     return s
 
 # Unlike the signin log, this table is one row per e-mail address.
@@ -341,6 +345,17 @@ class StatHandler(webapp.RequestHandler):
   def get(self):
     self.response.out.write(template.render('templates/stats.html', locals()))
 
+# Used by /report/donations
+class DonationReportHandler(webapp.RequestHandler):
+  def get(self):
+    donations = Donation.all().order("-amount")
+    total = 0
+    for d in donations:
+      if d.status_code == 1 and int(d.transaction_id) > 0:
+        total += d.amount
+    self.response.out.write(template.render('templates/donations.html', locals()))
+
+
 # Used by /stats/*
 class StatsHandler(webapp.RequestHandler):
   def get(self,format):
@@ -455,6 +470,7 @@ def main():
         ('/', MainHandler), 
         (r'^/_ah/mail/there.*', MailHandler),
     ('/eventmode', EventModeHandler),
+    ('/report/donations', DonationReportHandler),
     ('/ministaff', MiniStaffHandler),
     ('/signin', SigninHandler),
     ('/staff', StaffHandler),                

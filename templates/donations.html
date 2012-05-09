@@ -1,0 +1,44 @@
+<html>
+<head>
+	<link rel="stylesheet" type="text/css" href="/static/kiosk.css" />
+	<title>Donation log</title>
+</head>
+<body>
+
+<h1>Donations Log</h1>
+
+<style>
+td {padding:6px 12px; font-size:18px}
+tr.even td {
+  background-color: #eee;
+}
+tr.odd  td {
+  background-color: #fff;
+}
+.ago {
+  color:#999;
+}
+.picheight {
+  height:28px;
+}
+</style>
+
+<table cellspacing="0" cellpadding="0" border="0" align="center" >
+{% for d in donations %}    
+  {% ifnotequal d.transaction_id "0" %}
+  <tr class="{% cycle even,odd %}">
+  <td>&nbsp;</td>
+  <td><div class="type">{{ d.name }}</div></td>
+  <td><div class="type">{{ d.amount }}</div></td>
+  <td><div class="type">{{ d.status }}</div></td>
+  <td><div class="type">{{ d.transaction_id }}</div></td>
+  </tr>
+  {% endifnotequal %}
+{% endfor %}
+</table>
+
+
+<h4>Total of non-test & approved txns: {{total}}</h4>
+
+</body>
+</html>

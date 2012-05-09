@@ -90,14 +90,14 @@ function stopRKey(evt) {
     
     raw = $("input[name=email]").val();
     
-    if (m = raw.match(/^;([0-9]{16})=([0-9]{2})([0-9]{2})[0-9]{11}\?/)) {
+    if (m = raw.match(/^;([0-9]{14,16})=([0-9]{2})([0-9]{2})[0-9]{11}\?/)) {
       var month = m[3];
       var year = m[2];
       var cc = m[1];
       charge(cc,month,year,"","");
       return;
     }
-    if (m = raw.match(/^%B([0-9]{16})\^(.+)\/(.+)\^([0-9]{2})([0-9]{2}).+\?/)) {
+    if (m = raw.match(/^%B([0-9]{14,16})\^(.+)\/(.*)\^([0-9]{2})([0-9]{2}).+\?/)) {
       var month = m[5];
       var year = m[4];
       var first = m[3];
