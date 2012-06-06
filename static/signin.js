@@ -304,6 +304,11 @@ function refreshPage() {
 }
 
 $(document).ready(function() {
+  if (!window.location.href.match("localhost")) {
+     if (window.location.protocol != "https:" || window.location.hostname != "hackerdojo-signin.appspot.com") {
+        window.location.href = "http://hackerdojo-signin.appspot.com/";
+     }
+  }
   window.oldint = setInterval(refreshPage,15 *60* 1000);  
   window.oldfoc = setInterval('$("#em").focus();',1000);
   auto_reset();
