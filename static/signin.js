@@ -86,7 +86,15 @@ function stopRKey(evt) {
     return false;
   }
   
+  if (code === 37 || code === 59) {
+    // if the input is either a semicolon or percent sign, make input field font white
+    $("input[name=email]").css('font-color', '#fff');
+  }
+  
   if ((code == 13) && (node.type=="text"))  {    
+    setTimeout(function() {
+      $("input[name=email]").css('font-color', '#000');
+    }, 1000);
     
     raw = $("input[name=email]").val();
     
