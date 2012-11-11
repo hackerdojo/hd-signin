@@ -34,6 +34,13 @@ MAX_SIGNIN_TIME = 60 * 60 * 8
 def parse_json(data):
   return simplejson.loads(data.replace('/*-secure-','').replace('*/', ''))
 
+class DoorLog(db.Model):
+  event_time = db.DateTimeProperty(auto_now_add=True)
+  door = db.StringProperty()
+  rfid_tag = db.StringProperty()
+  username = db.StringProperty()
+  status = db.StringProperty()
+
 class Donation(db.Model):
   amount = db.FloatProperty()
   donation_time = db.DateTimeProperty(auto_now_add=True)
@@ -356,6 +363,19 @@ class DonationReportHandler(webapp.RequestHandler):
     self.response.out.write(template.render('templates/donations.html', locals()))
 
 
+# Used by /report/doorlog
+class DoorLogReportHandler(webapp.RequestHandler):
+  def get(self):
+    user = users.get_current_user()
+    if not user:
+      self.redirect(users.create_login_url('/report/doorlog'))
+    if users.is_current_user_admin():
+      logs = DoorLog.all().order("-event_time").fetch(500)
+      self.response.out.write(template.render('templates/doorlog.html', locals()))
+    else:
+      self.response.out.write("Sorry, need admin access")
+
+
 # Used by /stats/*
 class StatsHandler(webapp.RequestHandler):
   def get(self,format):
@@ -395,6 +415,20 @@ class StatsHandler(webapp.RequestHandler):
         else:
           self.response.out.write("0")
       self.response.out.write("\n")
+
+class DoorLogHandler(webapp.RequestHandler):
+    def get(self):
+        if self.request.get('door') and self.request.get('status'):
+          dl = DoorLog(
+            username = self.request.get('username'),
+            status = self.request.get('status'),
+            rfid_tag = self.request.get('rfid_tag'),
+            door = self.request.get('door')
+            )
+          dl.put()
+          self.response.out.write(simplejson.dumps({"result": "ok"}))
+        else:
+          self.response.out.write(simplejson.dumps({"error": "must specify 'door' and 'status' parameters"}))
 
 class ChargeHandler(webapp.RequestHandler):
     def post(self):
@@ -471,9 +505,11 @@ def main():
         (r'^/_ah/mail/there.*', MailHandler),
     ('/eventmode', EventModeHandler),
     ('/report/donations', DonationReportHandler),
+    ('/report/doorlog', DoorLogReportHandler),
     ('/ministaff', MiniStaffHandler),
     ('/signin', SigninHandler),
     ('/staff', StaffHandler),                
+    ('/api/doorlog', DoorLogHandler),                
     ('/api/charge', ChargeHandler),                
     ('/sstats/?', StatHandler),
     ('/sstats/(.+)', StatsHandler),

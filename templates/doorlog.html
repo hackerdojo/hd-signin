@@ -1,0 +1,48 @@
+<html>
+<head>
+	<link rel="stylesheet" type="text/css" href="/static/kiosk.css" />
+	<title>Door log</title>
+</head>
+<body>
+
+<h1>Door Log</h1>
+
+<style>
+th,td {padding:6px 12px; font-size:18px}
+tr.even td {
+  background-color: #eee;
+}
+tr.odd  td {
+  background-color: #fff;
+}
+.ago {
+  color:#999;
+}
+.picheight {
+  height:28px;
+}
+td,th {text-align:left}
+
+</style>
+
+<table cellspacing="0" cellpadding="0" border="0" align="center" >
+<tr>
+  <th><div class="type">Timestamp</div></th>
+  <th><div class="type">Door</div></th>
+  <th><div class="type">RFID Tag</div></th>
+  <th><div class="type">Username</div></th>
+  <th><div class="type">Status</div></th>
+</tr>
+{% for d in logs %}    
+  <tr class="{% cycle even,odd %}">
+  <td><div class="type">{{ d.event_time }}</div></td>
+  <td><div class="type">{{ d.door }}</div></td>
+  <td><div class="type">{{ d.rfid_tag }}</div></td>
+  <td><div class="type">{{ d.username }}</div></td>
+  <td><div class="type">{{ d.status }}</div></td>
+  </tr>
+{% endfor %}
+</table>
+
+</body>
+</html>
