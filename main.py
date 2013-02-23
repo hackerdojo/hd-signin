@@ -376,6 +376,24 @@ class DoorLogReportHandler(webapp.RequestHandler):
       self.response.out.write("Sorry, need admin access")
 
 
+#class SigninRecord(db.Model):
+#  email = db.StringProperty(required=True)
+#  first_signin = db.DateTimeProperty(auto_now_add=True)
+#  last_signin = db.DateTimeProperty()
+#  signins = db.IntegerProperty()
+#
+
+class RecentActiveHandler(webapp.RequestHandler):
+  def get(self):
+    for signin in SigninRecord.all().order("-signins"):
+      if "2013-02" in str(signin.last_signin) and signin.signins>1:
+        self.response.out.write(signin.email)
+        self.response.out.write(",")
+        self.response.out.write(signin.signins)
+        self.response.out.write(",")
+        self.response.out.write(signin.last_signin)
+        self.response.out.write("<br/>")
+
 # Used by /stats/*
 class StatsHandler(webapp.RequestHandler):
   def get(self,format):
@@ -505,6 +523,7 @@ def main():
         (r'^/_ah/mail/there.*', MailHandler),
     ('/eventmode', EventModeHandler),
     ('/report/donations', DonationReportHandler),
+    ('/report/recentactive', RecentActiveHandler),
     ('/report/doorlog', DoorLogReportHandler),
     ('/ministaff', MiniStaffHandler),
     ('/signin', SigninHandler),
