@@ -52,12 +52,12 @@ function charge(cc,month,year,first,last) {
        $('#ccamount').html(data.dollar_amount);
        $('#ccthanksmessage').html(data.message+" #"+data.trans_id);
        $('#ccthanks').fadeIn();
-       setTimeout("$('#ccthanks').fadeOut();",6 * 1000);
+       setTimeout("$('#ccthanks').fadeOut();",15 * 1000);
      } else {
         $('#ccerrormessage').html(data.message);
         $('#ajaxloading').hide();
         $('#ccerror').fadeIn();
-        setTimeout("$('#ccerror').fadeOut();",3 * 1000);
+        setTimeout("$('#ccerror').fadeOut();",7 * 1000);
      }
    }
   });
@@ -121,7 +121,15 @@ function stopRKey(evt) {
        $('#ccerrormessage').html("");
        setTimeout("$('#ccerror').fadeOut();",3 * 1000);
        return;      
-    }    
+    } 
+
+    if (window.cconly) {
+      auto_reset();      
+       $('#ccerror').fadeIn();
+       $('#ccerrormessage').html("");
+       setTimeout("$('#ccerror').fadeOut();",3 * 1000);
+       return;      
+    }
 
     
     entered = $("input[name=email]").val().replace(/^\;/, "").replace(/\?$/, ""); 
@@ -297,7 +305,7 @@ function isEmail (s) {
 /* Refresh the page every 15 minutes to clean things up, and update banner */
 function refreshPage() {
   $.ajax({
-    url: '/',
+    url: window.cconly?'/cc':'/',
     success: function(data) {
       if (window.oldint) {
         clearTimeout(window.oldint);

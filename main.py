@@ -13,12 +13,12 @@ from google.appengine.api import mail
 from google.appengine.ext.webapp.util import login_required
 from datetime import tzinfo, datetime, timedelta
 import urllib, hashlib, time, random
-from django.utils import simplejson
 import logging, email
 from google.appengine.ext import webapp 
 from google.appengine.ext.webapp.mail_handlers import InboundMailHandler 
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.api import mail
+import json
 import math
 import pprint
 import string
@@ -32,7 +32,7 @@ from keys import auth_net_login_id, auth_net_trans_key
 MAX_SIGNIN_TIME = 60 * 60 * 8
 
 def parse_json(data):
-  return simplejson.loads(data.replace('/*-secure-','').replace('*/', ''))
+  return json.loads(data.replace('/*-secure-','').replace('*/', ''))
 
 class DoorLog(db.Model):
   event_time = db.DateTimeProperty(auto_now_add=True)
@@ -222,7 +222,7 @@ class SigninHandler(webapp.RequestHandler):
                         method=urlfetch.POST,
                         headers={'Content-Type': 'application/x-www-form-urlencoded'})
       
-    self.response.out.write(simplejson.dumps(response))
+    self.response.out.write(json.dumps(response))
 
 # Initializes SigninRecord database (see util.py)
 class InitRecordsHandler(webapp.RequestHandler):
@@ -243,6 +243,12 @@ class ExportHandler(webapp.RequestHandler):
   def get(self):
     for e in SigninRecord.all():
       self.response.out.write(e.email+"\n")
+
+# Renders the main page      
+class CCHandler(webapp.RequestHandler):
+  def get(self):
+    self.response.out.write(template.render('templates/cc.html', locals()))
+  
 
 # Renders the main page      
 class MainHandler(webapp.RequestHandler):
@@ -444,9 +450,9 @@ class DoorLogHandler(webapp.RequestHandler):
             door = self.request.get('door')
             )
           dl.put()
-          self.response.out.write(simplejson.dumps({"result": "ok"}))
+          self.response.out.write(json.dumps({"result": "ok"}))
         else:
-          self.response.out.write(simplejson.dumps({"error": "must specify 'door' and 'status' parameters"}))
+          self.response.out.write(json.dumps({"error": "must specify 'door' and 'status' parameters"}))
 
 class ChargeHandler(webapp.RequestHandler):
     def post(self):
@@ -471,7 +477,7 @@ class ChargeHandler(webapp.RequestHandler):
         response = gateway.sale(amount, card)
         d = Donation(amount=amount, transaction_id=response.trans_id, status=response.status_strings[response.status], status_code=response.status, name=name)
         d.put()
-        self.response.out.write(simplejson.dumps({"trans_id": response.trans_id, 
+        self.response.out.write(json.dumps({"trans_id": response.trans_id, 
                                                   "amount": amount,
                                                   "dollar_amount": dollar_amount,
                                                   "status": response.status_strings[response.status], 
@@ -492,7 +498,7 @@ class JSONHandler(webapp.RequestHandler):
             created=staffer.created.strftime("%m-%d-%Y %H:%M:%S"),
             refTime=datetime.now().strftime("%m-%d-%Y %H:%M:%S"),)
             
-    self.response.out.write(simplejson.dumps([to_dict(staffer) for staffer in staff]))
+    self.response.out.write(wjson.dumps([to_dict(staffer) for staffer in staff]))
 
 # Used to power there@hackerdojo.com - send e-mail to everyone "there" (signed in) at the Dojo
 class MailHandler(InboundMailHandler):
@@ -517,9 +523,9 @@ class MailHandler(InboundMailHandler):
             subject="there@ bounce message",
             body="Sorry, it doesn't look like anyone is signed in as staff right now.")
 
-def main():
-    application = webapp.WSGIApplication([
+app = webapp.WSGIApplication([
         ('/', MainHandler), 
+        ('/cc', CCHandler), 
         (r'^/_ah/mail/there.*', MailHandler),
     ('/eventmode', EventModeHandler),
     ('/report/donations', DonationReportHandler),
@@ -539,8 +545,4 @@ def main():
     ('/appreciationemail', AppreciationEmailHandler),
         ('/staffjson', JSONHandler),
         ], debug=True)
-    run_wsgi_app(application)
-   
-if __name__ == '__main__':
-    main()
   
