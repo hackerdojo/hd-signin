@@ -401,6 +401,32 @@ class RecentActiveHandler(webapp.RequestHandler):
         self.response.out.write("<br/>")
 
 # Used by /stats/*
+class CStatsHandler(webapp.RequestHandler):
+  def get(self,format):
+    days = {}
+    formats = {'daily':"%Y-%m-%d", 'weekly':"%Y Week %U", 'monthly':"%Y-%m"}
+    date_format = formats[format]
+    self.response.headers.add_header('Content-Type',"text/csv")
+    self.response.headers.add_header('Content-disposition',"attachment;filename=signin-cstats-"+format+".csv")
+    self.response.out.write("Date,Total Signins")
+    self.response.out.write("\n")
+    
+    for signin in DailyCount.all().order("day"):
+      ts = string.replace(signin.day.strftime(date_format),"Week 00","Week 01")
+      if ts not in days:
+        days[ts] = 0
+      days[ts] += signin.count
+
+    ordered_days = days.keys()
+    ordered_days.sort()
+    
+    for day in ordered_days:
+      self.response.out.write(day)
+      self.response.out.write(",")
+      self.response.out.write(days[day])
+      self.response.out.write("\n")
+
+# Used by /stats/*
 class StatsHandler(webapp.RequestHandler):
   def get(self,format):
     days = {}
@@ -538,6 +564,7 @@ app = webapp.WSGIApplication([
     ('/api/charge', ChargeHandler),                
     ('/sstats/?', StatHandler),
     ('/sstats/(.+)', StatsHandler),
+    ('/cstats/(.+)', CStatsHandler),
     ('/log', LogHandler),
     # ('/initrecords', InitRecordsHandler), 
     ('/count', CountHandler), 
