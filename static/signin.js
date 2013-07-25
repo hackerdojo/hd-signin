@@ -6,10 +6,6 @@ function capstaff(evt) {
   if (evt.keyCode) code = evt.keyCode;
   else if (evt.which) code = evt.which;  
   var em = $("input[name=email]").val();  
-  if (code==45 || code==18) {
-    showStaffButtons();
-    return false;
-  }
   if (code==9 && em.length > 0 && em.indexOf("@") == -1) {
     $("input[name=email]").val(em+"@hackerdojo.com");
     return false;
@@ -19,7 +15,6 @@ function capstaff(evt) {
 function autosignin(x) {
   if (x==1) go('Anonymous');
   if (x==2) go('Member');
-  if (x==3) go('StaffKey');
   $('#auto').slideUp();  
 }
 
@@ -67,11 +62,7 @@ function stopRKey(evt) {
   var evt = (evt) ? evt : ((event) ? event : null); 
   var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null); 
   var em = $("input[name=email]").val();
-  
-  if (evt.keyCode==45 || evt.keyCode==18) {
-    showStaffButtons();
-  }
-    
+      
   if (evt.keyCode)
     code = evt.keyCode;
   else 
@@ -81,7 +72,6 @@ function stopRKey(evt) {
   if (main_screen_turn_on) {
     if (code == 49) go('Anonymous');
     if (code == 50) go('Member');
-    if (code == 51) go('StaffKey');
     if (code == 52) cancel();
     return false;
   }
@@ -149,17 +139,21 @@ function stopRKey(evt) {
           $('#ajaxloading').fadeOut();
           if (data && data.username) {
             main_screen_turn_on = true;
-            // window.audio = new Audio("/static/list.mp3");      
-            // window.audio.play();                 
-            $('#rfidwelcome').fadeIn();
+//            $('#rfidwelcome').fadeIn();
             $("input[name=email]").val(data.username + "@hackerdojo.com");
             $('.rfidpic').attr("src",data.gravatar);
             $('.rfidname').html(data.name);
-            if (data.auto_signin && data.auto_signin > 0 && data.auto_signin < 4) {
-              $('#auto').slideDown();
-              $('#count').attr("src","/static/countdown.gif");
-              window.auto = setTimeout("autosignin("+data.auto_signin+");",5000);
-            }
+            if (data.auto_signin==1) {
+              go('Anonymous');
+            } else {
+              go('Member');
+            }    
+            
+//            if (data.auto_signin && data.auto_signin > 0 && data.auto_signin < 4) {
+//              $('#auto').slideDown();
+//              $('#count').attr("src","/static/countdown.gif");
+//              window.auto = setTimeout("autosignin("+data.auto_signin+");",5000);
+//            }
              
           } else {
             prepare_for_signin();
@@ -181,10 +175,6 @@ function cancel() {
   auto_reset();
 }
 
-function showStaffButtons() {
-	document.getElementById("staffbuttons").style.display="block";
-  setTimeout("$('#staffbuttons').show();",30*1000);
-}
 
 document.onkeypress = stopRKey; 
 document.onkeydown = capstaff; 

@@ -1,6 +1,6 @@
 cron:
 
-- description: staff appreciation email
-  url: /appreciationemail?sendemail=true
-  schedule: every sunday 13:30
-  timezone: America/Los_Angeles
+#- description: staff appreciation email
+#  url: /appreciationemail?sendemail=true
+#  schedule: every sunday 13:30
+#  timezone: America/Los_Angeles

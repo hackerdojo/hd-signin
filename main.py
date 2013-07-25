@@ -1,7 +1,8 @@
 #!/usr/bin/env python
  
 import wsgiref.handlers
- 
+
+from google.appengine.api import channel
 from google.appengine.api.labs import taskqueue
 from google.appengine.ext import webapp
 from google.appengine.api import users
@@ -174,7 +175,7 @@ class Signin(db.Model):
     s = Signin(email=email, type=type, image_url=image, name=name)
     DailyCount.increment_and_get()    
     s.put()
-    if "mark.hutsell" in email or "some.other.evilguy" in email:
+    if "xxxxx.xxxxx" in email or "yyyy.yyyy" in email:
         mail.send_mail(sender="Signin Machine <signin@hackerdojo.com>", to="Emergency Paging System <page@hackerdojo.com>",
            subject="Sign-in: " + email, body="Sign in")
         urlfetch.fetch("http://www.dustball.com/call/call.php?str=Sign+in+"+email)
@@ -196,6 +197,8 @@ class SigninRecord(db.Model):
     else:
       rec = SigninRecord(email=email, first_signin=when, last_signin=when, signins=1)
     rec.put()
+    for ch in (range(1,3)):
+      channel.send_message("CH"+str(ch),json.dumps({"email":email,"first":str(rec.first_signin),"last":str(rec.last_signin),"count":rec.signins}))
     return rec
 
 # AJAX Signin
@@ -208,7 +211,7 @@ class SigninHandler(webapp.RequestHandler):
       signin = Signin.signin(email, type)
       record = SigninRecord.signin(email, datetime.now())
       tos = False
-      if record.signins == 1:
+      if record.signins == 1 and "hackerdojo.com" not in email:
         tos = True
       # PSUEDO CODE: if record.last_signin < date of last TOS change
       # PSUEDO CODE:   tos = True
@@ -298,6 +301,19 @@ class LogHandler(webapp.RequestHandler):
         s.type = "Event Guest"
       staff.append(s)
     self.response.out.write(template.render('templates/log.html', locals()))
+
+# Used by /rtlog - the realtime log
+class RTLogHandler(webapp.RequestHandler):
+  def get(self,ch):
+    user = users.get_current_user()
+    if not user:
+      self.redirect(users.create_login_url('/rtlog/ch'+str(ch)))
+    if users.is_current_user_admin():
+      token = channel.create_channel("CH"+str(ch))
+      self.response.out.write(template.render('templates/rtlog.html', locals()))
+    else:
+      self.response.out.write("Sorry, need admin access")
+
 
 # Used by the widget on the dojo website
 class MiniStaffHandler(webapp.RequestHandler):
@@ -527,32 +543,32 @@ class JSONHandler(webapp.RequestHandler):
     self.response.out.write(wjson.dumps([to_dict(staffer) for staffer in staff]))
 
 # Used to power there@hackerdojo.com - send e-mail to everyone "there" (signed in) at the Dojo
-class MailHandler(InboundMailHandler):
-    def receive(self, mail_message):
-        
-        staff = Signin.get_active_staff()
-        count = staff.count(1000)
-        if count > 0:
-          staff = [s.email for s in staff.fetch(1000)]
-          mail.send_mail(
-              sender="Signin Machine <signin@hackerdojo.com>",
-              to=(', '.join(staff)),
-              cc=mail_message.sender,
-              subject="[there@] " + mail_message.subject,
-              body=mail_message.body,
-              reply_to=mail_message.sender
-              )
-        else:
-          mail.send_mail(
-            sender="Signin Machine <signin@hackerdojo.com>",
-            to=mail_message.sender,
-            subject="there@ bounce message",
-            body="Sorry, it doesn't look like anyone is signed in as staff right now.")
+#class MailHandler(InboundMailHandler):
+#    def receive(self, mail_message):
+#        
+#        staff = Signin.get_active_staff()
+#        count = staff.count(1000)
+#        if count > 0:
+#          staff = [s.email for s in staff.fetch(1000)]
+#          mail.send_mail(
+#              sender="Signin Machine <signin@hackerdojo.com>",
+#              to=(', '.join(staff)),
+#              cc=mail_message.sender,
+#              subject="[there@] " + mail_message.subject,
+#              body=mail_message.body,
+#              reply_to=mail_message.sender
+#              )
+#        else:
+#          mail.send_mail(
+#            sender="Signin Machine <signin@hackerdojo.com>",
+#            to=mail_message.sender,
+#            subject="there@ bounce message",
+#            body="Sorry, it doesn't look like anyone is signed in as staff right now.")
 
 app = webapp.WSGIApplication([
         ('/', MainHandler), 
         ('/cc', CCHandler), 
-        (r'^/_ah/mail/there.*', MailHandler),
+        #(r'^/_ah/mail/there.*', MailHandler),
     ('/eventmode', EventModeHandler),
     ('/report/donations', DonationReportHandler),
     ('/report/recentactive', RecentActiveHandler),
@@ -566,10 +582,11 @@ app = webapp.WSGIApplication([
     ('/sstats/(.+)', StatsHandler),
     ('/cstats/(.+)', CStatsHandler),
     ('/log', LogHandler),
+    ('/rtlog/ch(\d)', RTLogHandler),
     # ('/initrecords', InitRecordsHandler), 
     ('/count', CountHandler), 
     # ('/export', ExportHandler), 
-    ('/appreciationemail', AppreciationEmailHandler),
+    #('/appreciationemail', AppreciationEmailHandler),
         ('/staffjson', JSONHandler),
         ], debug=True)
   

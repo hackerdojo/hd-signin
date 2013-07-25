@@ -6,7 +6,8 @@ api_version: 1
 
 inbound_services:
 - mail
-  
+- channel_presence
+
 builtins:
 - appstats: on
 - deferred: on
@@ -21,5 +22,4 @@ handlers:
 #  login: admin
 - url: .*
   script: main.app
-
 

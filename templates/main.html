@@ -4,8 +4,8 @@
   <title>Sign in</title>
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
   <script type="text/javascript" src="/static/md5.js"></script>
-  <script type="text/javascript" src="/static/signin.js?v=11"></script>
-  <link rel="stylesheet" type="text/css" href="/static/signin.css?v=11" />
+  <script type="text/javascript" src="/static/signin.js?v=13"></script>
+  <link rel="stylesheet" type="text/css" href="/static/signin.css?v=13" />
 </head>
 <body id="body">
 
@@ -70,24 +70,6 @@
 			</td>
 			<td>
 				<input type="button" value="2" style="border:2px solid orange" />
-			</td>
-			<td>&nbsp;
-			</td>
-		</tr>
-		<tr class="hrow" onclick="go('StaffKey')">
-			<td>&nbsp;
-			</td>
-			<td>
-				<img height="80" width="80" src="/static/anon.png" class="rfidpic" style="border:2px solid blue">
-			</td>
-			<td>
-				<h3 style="margin:0">
-					<span class="rfidname">Name</span>
-				</h3>
-				<h4 style="margin:0">Acting as staff</h4>
-			</td>
-			<td>
-				<input type="button" value="3" style="border:2px solid blue" />
 			</td>
 			<td>&nbsp;
 			</td>
@@ -194,9 +176,6 @@
     <input type="button" value="Member" onclick="clickmember()" />
     <input type="button" value="Guest" onclick="go('Guest')" />
     <input type="button" value="Event Attendee" onclick="go('Event')" />  
-    <div id="staffbuttons" style="display:none">
-    <input type=button value="Staff" onclick="go('StaffKey')" />
-    </div>
   {% endif %}
   <input id="ttt" type="hidden" name="type" value="" />
   </form>
