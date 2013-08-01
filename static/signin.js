@@ -310,7 +310,7 @@ function refreshPage() {
 }
 
 $(document).ready(function() {
-  if (!window.location.href.match("localhost")) {
+  if (!window.location.href.match("localhost") && !window.location.href.match("10.15.2.57")) {
      if (window.location.protocol != "https:" || window.location.hostname != "hackerdojo-signin.appspot.com") {
         window.location.href = "https://hackerdojo-signin.appspot.com/";
      }

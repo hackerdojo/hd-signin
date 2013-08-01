@@ -1,0 +1,87 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>Fast sign in</title>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+  <script type="text/javascript" src="/static/md5.js"></script>
+  <script type="text/javascript" src="/static/signin.js?v=13"></script>
+  <link rel="stylesheet" type="text/css" href="/static/signin.css?v=13" />
+</head>
+<body id="body" style="overflow:hidden">
+
+<div style="position:absolute;margin:0; padding:0;top:0:left:0; z-index:-1; overflow:hidden"><img src="http://www.buffalogov.org/files/Images/highway4.JPG" width=100%></div>
+
+<div id="ajaxloading" class="corners" style="padding:2em; display:none; position:absolute; z-index:2; top:25%; left:25%; width:30%; border:2px solid #90900f; background:#ffffa0 ">
+	<center>
+		Please Wait
+		<img src="/static/spin1.gif" style="margin:1em" width="32" height="32" align="absmiddle" />
+	</center>
+</div>
+
+<div id="thanks" class="corners" style="padding:2em; display:none; position:absolute; z-index:2; top:20%; left:15%; width:60%; border:2px solid #227b1b; background:#b5e5b2 ">
+  <img src="/static/check.png" height="130" width="130" align="left" style="margin-right:1em">
+	<p style="text-align:center" id="thanksmessage">Thank You</p>
+</div>
+
+<div id="denied" class="corners" style="padding:2em; display:none; color:black; position:absolute; z-index:2; top:20%; left:20%; width:50%; border:2px solid red; background:#faa ">
+	<h1>
+		<center>Access Denied</center>
+	</h1>
+</div>
+
+<div id="ccerror" class="corners" style="padding:4em; display:none; color:black; position:absolute; z-index:2; top:25%; left:10%; width:60%; border:2px solid red; background:#faa ">
+	<h1><center>Credit Card Error</center></h1>
+  <h3><p style="text-align:center" id="ccerrormessage">&nbsp;</p></h3>
+	</h1>
+</div>
+
+<div id="ccthanks" class="corners" style="padding:2em; display:none; position:absolute; z-index:2; top:25%; left:10%; width:60%; border:2px solid #227b1b; background:#b5e5b2 ">
+  <img src="/static/check.png" height="130" width="130" align="left" style="margin-right:1em">
+      <p style="text-align:center; font-size:180%" id="ccamount">&nbsp;</p>
+      <p style="text-align:center" >THANK YOU</p>
+	<p style="text-align:center; font-weight:normal; font-size:85%" id="ccthanksmessage">&nbsp;</p>
+</div>
+
+
+<script>
+(function () {
+    var viewFullScreen = document.body;
+    if (viewFullScreen) {
+        viewFullScreen.addEventListener("keydown", function () {
+            var docElm = document.body;
+            if (docElm.requestFullscreen) {
+                docElm.requestFullscreen();
+            }
+            else if (docElm.mozRequestFullScreen) {
+                docElm.mozRequestFullScreen();
+            }
+            else if (docElm.webkitRequestFullScreen) {
+                docElm.webkitRequestFullScreen();
+            }
+        }, false);
+    }
+
+})();
+
+</script>
+
+
+
+<center>
+  <form id="ajax_form" onsubmit="return false;">
+  <img style="margin:1.5em" src="/static/logo.png" width="345" height="122" />
+  
+  <h2 style="text-shadow: 0 0 10px white;"><small>MEMBERS</small><br>FastTrack<sup>&reg;</sup> Sign-in</h2>
+   
+  <input id="em" type="text" name="email" autocomplete="off"  style="filter: alpha(opacity=1); -moz-opacity: 0.01;  -khtml-opacity: 0.01; opacity: 0.01;">
+
+  <input id="ttt" type="hidden" name="type" value="" />
+  </form>
+</center>
+
+<audio autobuffer nocontrols>
+<source src='/static/money.wav'>
+</audio>
+  
+</body>
+</html>

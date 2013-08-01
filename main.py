@@ -253,6 +253,12 @@ class CCHandler(webapp.RequestHandler):
     self.response.out.write(template.render('templates/cc.html', locals()))
   
 
+# Renders fast track page
+class FastHandler(webapp.RequestHandler):
+  def get(self):
+    self.response.out.write(template.render('templates/fast.html', locals()))
+  
+
 # Renders the main page      
 class MainHandler(webapp.RequestHandler):
   def get(self):
@@ -574,6 +580,7 @@ app = webapp.WSGIApplication([
     ('/report/recentactive', RecentActiveHandler),
     ('/report/doorlog', DoorLogReportHandler),
     ('/ministaff', MiniStaffHandler),
+    ('/fast', FastHandler),
     ('/signin', SigninHandler),
     ('/staff', StaffHandler),                
     ('/api/doorlog', DoorLogHandler),                
