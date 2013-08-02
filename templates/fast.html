@@ -7,9 +7,40 @@
   <script type="text/javascript" src="/static/signin.js?v=13"></script>
   <link rel="stylesheet" type="text/css" href="/static/signin.css?v=13" />
 </head>
-<body id="body" style="overflow:hidden">
+<body id="body" style="overflow:hidden; width:800px; height:480px; background:black;">
 
-<div style="position:absolute;margin:0; padding:0;top:0:left:0; z-index:-1; overflow:hidden"><img src="http://www.buffalogov.org/files/Images/highway4.JPG" width=100%></div>
+<div id="s1" style="position:absolute; margin:0; width:800px; height:480px; padding:0; top:0:left:0; z-index:-1; overflow:hidden">
+  <center><img style="margin:100px auto" src="http://wiki.hackerdojo.com/f/logo_white_text.png" width="750"  /></center>
+</div>
+  
+<div id="s2" style="display:none; position:absolute; margin:0; width:800px; height:480px; padding:0; top:0:left:0; z-index:-1; overflow:hidden">
+  <p style="text-align:center; color:yellow; font-size:80px; font-weight:bold; margin-top:110px"><small>MEMBERS</small><br>FastTrack<sup>&reg;</sup> Sign-in</p>
+</div>
+
+<div id="s3" style="display:none; position:absolute; margin:0; width:800px; height:480px; padding:0; top:0:left:0; z-index:-1; overflow:hidden">
+  <img src="http://www.buffalogov.org/files/Images/highway4.JPG" width=100%>
+</div>
+
+<div id="s4" style="display:none; position:absolute; margin:0; width:800px; height:480px; padding:0; top:0:left:0; z-index:-1; overflow:hidden">
+  <p style="text-align:center; color:#18ff00; font-size:220px; font-weight:bold; margin-top:110px">FAST</p>
+</div>
+
+<div id="s5" style="display:none; position:absolute; margin:0; width:800px; height:480px; padding:0; top:0:left:0; z-index:-1; overflow:hidden">
+  <img src="http://i.imgur.com/nw14pSM.png" width=800 height=480><
+</div>
+
+<div id="s6" style="display:none; position:absolute; margin:0; width:800px; height:480px; padding:0; top:0:left:0; z-index:-1; overflow:hidden">
+  <p style="text-align:center; color:white; font-size:240px; font-weight:bold; margin-top:110px">WOW</p>
+</div>
+
+<div id="s7" style="display:none; position:absolute; margin:0; width:800px; height:480px; padding:0; top:0:left:0; z-index:-1; overflow:hidden">
+  <img src="http://i.imgur.com/84wYc97.png" width=800 height=480>
+</div>
+
+
+
+
+
 
 <div id="ajaxloading" class="corners" style="padding:2em; display:none; position:absolute; z-index:2; top:25%; left:25%; width:30%; border:2px solid #90900f; background:#ffffa0 ">
 	<center>
@@ -44,7 +75,9 @@
 
 
 <script>
+
 (function () {
+  if (!window.location.href.match("localhost")) {
     var viewFullScreen = document.body;
     if (viewFullScreen) {
         viewFullScreen.addEventListener("keydown", function () {
@@ -60,24 +93,33 @@
             }
         }, false);
     }
+  }
 
 })();
 
+$(document).ready(function() {
+  setInterval('sss();',700);
+});
+
+window.s=1;
+function sss() {
+  var max = 7;
+  for (i=1;i<max+1;i++) {
+    console.log("window.s=%o",window.s);
+    console.log("i=%o",i);
+    (window.s==i) ? $('#s'+i).show() : $('#s'+i).hide();
+  }
+  window.s++;
+  if (window.s>max) window.s=1;
+}
 </script>
 
-
-
-<center>
+<div style="position:absolute; margin:0; width:800px; height:480px; padding:0; top:0:left:0; z-index:2; overflow:hidden; filter: alpha(opacity=1); -moz-opacity: 0.01;  -khtml-opacity: 0.01; opacity: 0.01;">
   <form id="ajax_form" onsubmit="return false;">
-  <img style="margin:1.5em" src="/static/logo.png" width="345" height="122" />
-  
-  <h2 style="text-shadow: 0 0 10px white;"><small>MEMBERS</small><br>FastTrack<sup>&reg;</sup> Sign-in</h2>
-   
-  <input id="em" type="text" name="email" autocomplete="off"  style="filter: alpha(opacity=1); -moz-opacity: 0.01;  -khtml-opacity: 0.01; opacity: 0.01;">
-
+  <input id="em" type="text" name="email" autocomplete="off"  style="">
   <input id="ttt" type="hidden" name="type" value="" />
   </form>
-</center>
+</div>
 
 <audio autobuffer nocontrols>
 <source src='/static/money.wav'>

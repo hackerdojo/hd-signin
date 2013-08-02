@@ -310,12 +310,14 @@ function refreshPage() {
 }
 
 $(document).ready(function() {
-  if (!window.location.href.match("localhost") && !window.location.href.match("10.15.2.57")) {
+  if (!window.location.href.match("localhost") && !window.location.href.match("fast")) {
      if (window.location.protocol != "https:" || window.location.hostname != "hackerdojo-signin.appspot.com") {
         window.location.href = "https://hackerdojo-signin.appspot.com/";
      }
   }
-  window.oldint = setInterval(refreshPage,15 *60* 1000);  
+  if (!window.location.href.match("fast")) {
+    window.oldint = setInterval(refreshPage,15 *60* 1000);  
+  }
   window.oldfoc = setInterval('$("#em").focus();',1000);
   auto_reset();
   
