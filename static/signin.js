@@ -257,12 +257,19 @@ function ok() {
     },
     success: function(data) {
       $('#ajaxloading').fadeOut();
-      $("#thanksmessage").html("<b><nobr>Thanks "+data.name+"!</nobr></b><br/><br/><small>Visit #"+data.signins+"</small>");      
-      if (data.tos) {
-        $('#ajaxloading').hide();
-        $('#tos').fadeIn();
-      } else {        
-        thanks();
+      
+      if (data.nomember) {
+         $('#denied').fadeIn();
+         setTimeout("$('#denied').fadeOut();",3 * 1000);
+      } else {
+
+        $("#thanksmessage").html("<b><nobr>Thanks "+data.name+"!</nobr></b><br/><br/><small>Visit #"+data.signins+"</small>");      
+        if (data.tos) {
+          $('#ajaxloading').hide();
+          $('#tos').fadeIn();
+        } else {        
+          thanks();
+        }
       }
       prepare_for_signin();
     }

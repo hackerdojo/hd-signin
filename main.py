@@ -5,7 +5,7 @@ import wsgiref.handlers
 from google.appengine.api import channel
 from google.appengine.api.labs import taskqueue
 from google.appengine.ext import webapp
-from google.appengine.api import users
+from google.appengine.api import users, memcache
 from google.appengine.ext.webapp import template
 from google.appengine.ext import deferred
 from google.appengine.ext import db
@@ -224,7 +224,13 @@ class SigninHandler(webapp.RequestHandler):
                         payload=self.request.query_string,
                         method=urlfetch.POST,
                         headers={'Content-Type': 'application/x-www-form-urlencoded'})
-      
+    
+    if "@hackerdojo.com" in email:
+      usernames = memcache.get('usernames') 
+      username = string.split(email,"@")[0] 
+      if usernames and "[" in usernames and username not in usernames:
+        response = {"error": "Member not found", "nomember":"true"}
+    
     self.response.out.write(json.dumps(response))
 
 # Initializes SigninRecord database (see util.py)
@@ -571,6 +577,15 @@ class JSONHandler(webapp.RequestHandler):
 #            subject="there@ bounce message",
 #            body="Sorry, it doesn't look like anyone is signed in as staff right now.")
 
+class FetchUsersHandler(webapp.RequestHandler):
+  def get(self):
+      resp = urlfetch.fetch('http://domain.hackerdojo.com/users', deadline=20)
+      if resp.status_code == 200:
+          memcache.set('usernames', resp.content, 3600*2)
+          self.response.out.write("200 OK - Usernames set")
+      else:
+          self.response.out.write("500 - Something broke")
+
 app = webapp.WSGIApplication([
         ('/', MainHandler), 
         ('/cc', CCHandler), 
@@ -583,6 +598,7 @@ app = webapp.WSGIApplication([
     ('/fast', FastHandler),
     ('/signin', SigninHandler),
     ('/staff', StaffHandler),                
+    ('/cron/fetchusers', FetchUsersHandler),                
     ('/api/doorlog', DoorLogHandler),                
     ('/api/charge', ChargeHandler),                
     ('/sstats/?', StatHandler),

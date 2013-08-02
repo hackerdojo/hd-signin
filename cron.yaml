@@ -4,3 +4,8 @@ cron:
 #  url: /appreciationemail?sendemail=true
 #  schedule: every sunday 13:30
 #  timezone: America/Los_Angeles
+
+- description: cache usersnames
+  url: /cron/fetchusers
+  schedule: every 1 hour
+  timezone: America/Los_Angeles

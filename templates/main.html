@@ -4,8 +4,8 @@
   <title>Sign in</title>
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
   <script type="text/javascript" src="/static/md5.js"></script>
-  <script type="text/javascript" src="/static/signin.js?v=13"></script>
-  <link rel="stylesheet" type="text/css" href="/static/signin.css?v=13" />
+  <script type="text/javascript" src="/static/signin.js?v=14"></script>
+  <link rel="stylesheet" type="text/css" href="/static/signin.css?v=14" />
 </head>
 <body id="body">
 
@@ -173,7 +173,7 @@
     <input id="em" type="text" name="email" autocomplete="off" >
     <a style="color:green; font-size:9px" href="#" onclick="$('#privacy').fadeIn();">E-mail Privacy</a>
     <br>
-    <input type="button" value="Member" onclick="clickmember()" />
+    <input type="button" value="Member" onclick="go('Member')" />
     <input type="button" value="Guest" onclick="go('Guest')" />
     <input type="button" value="Event Attendee" onclick="go('Event')" />  
   {% endif %}
