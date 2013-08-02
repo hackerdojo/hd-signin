@@ -104,6 +104,7 @@ onMessage = function(m) {
    if (s.count==1) icon = "http://i.imgur.com/uQdPsaI.png";
    if (s.count>15) icon = "http://i.imgur.com/eYAnC.jpg";
    if (s.email.indexOf("@hackerdojo.com")>0) icon = "http://i.imgur.com/AM7rGV1.png";
+   if (s.count==-1) icon = "http://i.imgur.com/3frBOKO.png";
    sendnote(s.count+": "+s.email,icon);
 
    $(".template .email").html(s.email);

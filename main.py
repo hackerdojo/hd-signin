@@ -207,6 +207,17 @@ class SigninHandler(webapp.RequestHandler):
     email = self.request.get('email')
     # time.sleep(2)
     type = self.request.get('type')
+
+    if "@hackerdojo.com" in email:
+      usernames = memcache.get('usernames') 
+      username = string.split(email,"@")[0] 
+      if usernames and "[" in usernames and username not in usernames:
+        response = {"error": "Member not found", "nomember":"true"}
+        self.response.out.write(json.dumps(response))
+        for ch in (range(1,3)):
+          channel.send_message("CH"+str(ch),json.dumps({"email":email,"first":"","last":"","count":-1}))
+        return
+
     if email and type:
       signin = Signin.signin(email, type)
       record = SigninRecord.signin(email, datetime.now())
@@ -218,6 +229,7 @@ class SigninHandler(webapp.RequestHandler):
       response = {"signins":record.signins, "name":signin.name, "tos":tos}
     else:
       response = {"error": "need to specify email and type"}
+
     current_event = Event.get_current_event()
     if current_event and datetime.now()>current_event.from_time and datetime.now() < current_event.to_time:
       urlfetch.fetch(url=current_event.webhook_url,
@@ -225,11 +237,6 @@ class SigninHandler(webapp.RequestHandler):
                         method=urlfetch.POST,
                         headers={'Content-Type': 'application/x-www-form-urlencoded'})
     
-    if "@hackerdojo.com" in email:
-      usernames = memcache.get('usernames') 
-      username = string.split(email,"@")[0] 
-      if usernames and "[" in usernames and username not in usernames:
-        response = {"error": "Member not found", "nomember":"true"}
     
     self.response.out.write(json.dumps(response))
 
@@ -300,6 +307,9 @@ class StaffHandler(webapp.RequestHandler):
 # Used by /log - the user facing log of people that have signed in last 12 hours
 class LogHandler(webapp.RequestHandler):
   def get(self):
+    user = users.get_current_user()
+    if not user:
+      self.redirect(users.create_login_url('/log'))
     staff_db = db.GqlQuery("SELECT * FROM Signin WHERE created >= DATETIME(:earlier_this_morning) ORDER BY created desc LIMIT 500",
       earlier_this_morning=(datetime.now(Pacific()).strftime("%Y-%m-%d 00:00:00")))
     staff = []
@@ -582,7 +592,7 @@ class FetchUsersHandler(webapp.RequestHandler):
       resp = urlfetch.fetch('http://domain.hackerdojo.com/users', deadline=20)
       if resp.status_code == 200:
           memcache.set('usernames', resp.content, 3600*2)
-          self.response.out.write("200 OK - Usernames set")
+          self.response.out.write("<h1>200 OK - Usernames set</h1>")
       else:
           self.response.out.write("500 - Something broke")
 
