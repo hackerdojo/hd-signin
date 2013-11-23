@@ -28,7 +28,9 @@ from util import Pacific
 import os
 from quix.pay.gateway.authorizenet import AimGateway
 from quix.pay.transaction import CreditCard
-from keys import auth_net_login_id, auth_net_trans_key
+#disabled to disable credit card processing
+#if you want to re-enable it, get the info and don't put it on github
+#from keys import auth_net_login_id, auth_net_trans_key
 
 MAX_SIGNIN_TIME = 60 * 60 * 8
 
