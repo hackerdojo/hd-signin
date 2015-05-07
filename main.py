@@ -591,7 +591,7 @@ class JSONHandler(webapp.RequestHandler):
 
 class FetchUsersHandler(webapp.RequestHandler):
   def get(self):
-      resp = urlfetch.fetch('http://domain.hackerdojo.com/users', deadline=20)
+      resp = urlfetch.fetch('http://hd-domain-hrd.appspot.com/users', deadline=20)
       if resp.status_code == 200:
           memcache.set('usernames', resp.content, 3600*2)
           self.response.out.write("<h1>200 OK - Usernames set</h1>")
