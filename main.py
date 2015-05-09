@@ -211,8 +211,8 @@ class SigninHandler(webapp.RequestHandler):
     type = self.request.get('type')
 
     if "@hackerdojo.com" in email:
-      usernames = memcache.get('usernames') 
-      username = string.split(email,"@")[0] 
+      usernames = memcache.get('usernames')
+      username = string.split(email,"@")[0]
       if usernames and "[" in usernames and username not in usernames:
         response = {"error": "Member not found", "nomember":"true"}
         self.response.out.write(json.dumps(response))
@@ -287,7 +287,7 @@ class MainHandler(webapp.RequestHandler):
     if event and datetime.now()>event.from_time and datetime.now() < event.to_time:
       current_event = event
     self.response.out.write(template.render('templates/main.html', locals()))
-  
+
   def post(self):
     email = self.request.get('email')
     type = self.request.get('type')
@@ -299,7 +299,7 @@ class StaffHandler(webapp.RequestHandler):
   def get(self):
     staff = Signin.get_active_staff()
     self.response.out.write(template.render('templates/staff.html', locals()))
-  
+
   def post(self):
     email = self.request.get('email')
     if email:

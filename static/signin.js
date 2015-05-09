@@ -118,13 +118,14 @@ function stopRKey(evt) {
        $('#ccerror').fadeIn();
        $('#ccerrormessage').html("");
        setTimeout("$('#ccerror').fadeOut();",3 * 1000);
-       return;      
+       return;
     }
 
-    
-    entered = $("input[name=email]").val().replace(/^\;/, "").replace(/\?$/, ""); 
-   
+
+    entered = $("input[name=email]").val().replace(/^\;/, "").replace(/\?$/, "");
+
     /* RFID is numeric */
+    console.log("Making callback.");
     if (entered > 0) {
       $("input[name=email]").val("");
       $('#ajaxloading').fadeIn();
@@ -133,7 +134,7 @@ function stopRKey(evt) {
         dataType: "json",
         timeout: 14 * 1000,
         error: function(data) {
-          auto_reset();      
+          auto_reset();
         },
         success: function(data) {
           $('#ajaxloading').fadeOut();
@@ -147,28 +148,28 @@ function stopRKey(evt) {
               go('Anonymous');
             } else {
               go('Member');
-            }    
-            
+            }
+
 //            if (data.auto_signin && data.auto_signin > 0 && data.auto_signin < 4) {
 //              $('#auto').slideDown();
 //              $('#count').attr("src","/static/countdown.gif");
 //              window.auto = setTimeout("autosignin("+data.auto_signin+");",5000);
 //            }
-             
+
           } else {
             prepare_for_signin();
-            audio = new Audio("/static/denied.mp3");      
+            audio = new Audio("/static/denied.mp3");
             audio.play();
             $('#denied').fadeIn();
             setTimeout("$('#denied').fadeOut();",3 * 1000);
-          }   
+          }
         }
       });
-        
-    }    
+
+    }
     return false;
-  } 
-} 
+  }
+}
 
 function cancel() {
   main_screen_turn_on = false;
@@ -306,10 +307,10 @@ function refreshPage() {
     success: function(data) {
       if (window.oldint) {
         clearTimeout(window.oldint);
-      }      
+      }
       if (window.oldfoc) {
         clearTimeout(window.oldfoc);
-      }      
+      }
       $('#body').html(data);
     }
   });
@@ -318,21 +319,21 @@ function refreshPage() {
 
 $(document).ready(function() {
   if (!window.location.href.match("localhost") && !window.location.href.match("fast")) {
-     if (window.location.protocol != "https:" || window.location.hostname != "hackerdojo-signin.appspot.com") {
-        window.location.href = "https://hackerdojo-signin.appspot.com/";
+     if (window.location.protocol != "http:" || window.location.hostname != "hackerdojo-signin.appspot.com") {
+        window.location.href = "http://hackerdojo-signin.appspot.com/";
      }
   }
   if (!window.location.href.match("fast")) {
-    window.oldint = setInterval(refreshPage,15 *60* 1000);  
+    window.oldint = setInterval(refreshPage,15 *60* 1000);
   }
   window.oldfoc = setInterval('$("#em").focus();',1000);
   auto_reset();
-  
+
   $("#em").live('blur', function() {
     setTimeout('$("#em").focus();',16);
   });
-  
-          
+
+
 });
 
 
