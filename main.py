@@ -236,7 +236,7 @@ class SigninHandler(webapp.RequestHandler):
             return
 
           self.response.set_status(500)
-          response = {"error": "Backend API call failed."}
+          response = {"error_message": "Backend API call failed."}
           self.response.out.write(json.dumps(response))
           return
 
@@ -263,7 +263,7 @@ class SigninHandler(webapp.RequestHandler):
       response["name"] = signin.name
       response["tos"] = tos
     else:
-      response = {"error": "need to specify email and type"}
+      response = {"error_message": "need to specify email and type"}
 
     current_event = Event.get_current_event()
     if current_event and datetime.now()>current_event.from_time and datetime.now() < current_event.to_time:

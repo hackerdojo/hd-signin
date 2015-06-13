@@ -259,8 +259,11 @@ function ok() {
     dataType: "json",
     data: $('#ajax_form').serialize(),
     timeout: 14 * 1000,
-    error: function(data) {
-      auto_reset();
+    error: function(jqXHR, textStatus, errorThrown) {
+      $('#ajaxloading').fadeOut();
+      $('#error_title').html('<b>Signin Error</b>');
+      $('#error_message').html(errorThrown);
+      $('#error').fadeIn();
     },
     success: function(data) {
       $('#ajaxloading').fadeOut();
@@ -276,7 +279,7 @@ function ok() {
         $('#upgrade').fadeIn();
       } else {
         var visit_message = 'Visit #' + data.signins;
-        if (data.visits_remaining != 'None') {
+        if (data.visits_remaining && data.visits_remaining != 'None') {
           visit_message = data.visits_remaining + ' visits remaining' +
                           ' this month.';
         }
@@ -313,6 +316,7 @@ function close_popups() {
   $('#error').fadeOut();
   $('#thanks').fadeOut();
   $('#upgrade').fadeOut();
+  prepare_for_signin();
 }
 
 function increment_counter() {
