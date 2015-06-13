@@ -29,30 +29,32 @@ function charge(cc,month,year,first,last) {
    type: "post",
    timeout: 14 * 1000,
    error: function(data) {
-     auto_reset();      
+     auto_reset();
+     $('#error_title').html('Credit Card Error');
      if (data.message) {
-       $('#ccerrormessage').html(data.message);
+       $('#error_message').html(data.message);
      } else {
-       $('#ccerrormessage').html("");
+       $('#error_message').html("");
      }
      $('#ajaxloading').hide();
-     $('#ccerror').fadeIn();
-     setTimeout("$('#ccerror').fadeOut();",3 * 1000);
+     $('#error').fadeIn();
+     setTimeout("$('#error').fadeOut();",3 * 1000);
    },
    success: function(data) {
      if (data.status_code==1) {
-       window.audio = new Audio("/static/money.wav");      
-       window.audio.play();  
+       window.audio = new Audio("/static/money.wav");
+       window.audio.play();
        $('#ajaxloading').fadeOut();
        $('#ccamount').html(data.dollar_amount);
        $('#ccthanksmessage').html(data.message+" #"+data.trans_id);
        $('#ccthanks').fadeIn();
        setTimeout("$('#ccthanks').fadeOut();",15 * 1000);
      } else {
-        $('#ccerrormessage').html(data.message);
+        $('#error_title').html('Credit Card Error');
+        $('#error_message').html(data.message);
         $('#ajaxloading').hide();
-        $('#ccerror').fadeIn();
-        setTimeout("$('#ccerror').fadeOut();",7 * 1000);
+        $('#error').fadeIn();
+        setTimeout("$('#error').fadeOut();",7 * 1000);
      }
    }
   });
@@ -106,18 +108,20 @@ function stopRKey(evt) {
     }
     if (m = raw.match(/^[;%]E.*\?/)) {
       // Error
-      auto_reset();      
-       $('#ccerror').fadeIn();
-       $('#ccerrormessage').html("");
-       setTimeout("$('#ccerror').fadeOut();",3 * 1000);
-       return;      
-    } 
+      auto_reset();
+        $('#error_title').html('Credit Card Error');
+        $('#error_message').html('');
+        $('#error').fadeIn();
+        setTimeout("$('#error').fadeOut();",3 * 1000);
+        return;
+    }
 
     if (window.cconly) {
-      auto_reset();      
-       $('#ccerror').fadeIn();
-       $('#ccerrormessage').html("");
-       setTimeout("$('#ccerror').fadeOut();",3 * 1000);
+      auto_reset();
+       $('#error_title').html('Credit Card Error');
+       $('#error_message').html('');
+       $('#error').fadeIn();
+       setTimeout("$('#error').fadeOut();",3 * 1000);
        return;
     }
 
@@ -160,8 +164,10 @@ function stopRKey(evt) {
             prepare_for_signin();
             audio = new Audio("/static/denied.mp3");
             audio.play();
-            $('#denied').fadeIn();
-            setTimeout("$('#denied').fadeOut();",3 * 1000);
+            $('#error_title').html('Access Denied');
+            $('#error_message').html('Invalid RFID key.');
+            $('#error').fadeIn();
+            setTimeout("$('#error').fadeOut();",3 * 1000);
           }
         }
       });
@@ -203,7 +209,6 @@ function clickmember() {
 
 /* Set the type and proceed with signin */
 function go(x) {
-  console.log("Running go function.");
   if (isEmail($("input[name=email]").val())) {
     document.getElementById("ttt").value = x;
     $('#rfidwelcome').fadeOut();
@@ -223,7 +228,7 @@ function go(x) {
 function auto_reset() {
   $('#tos').hide();
   $('#thanks').fadeOut();
-  $('#denied').fadeOut();
+  $('#error').fadeOut();
   $('#privacy').hide();
   $('#auto').hide();
   $('#rfidwelcome').fadeOut();
@@ -246,7 +251,6 @@ function prepare_for_signin() {
 
 /* Do the actual signin */
 function ok() {
-  console.log("Running ok function.");
   $("#tos").fadeOut();
   main_screen_turn_on = false;
   $('#ajaxloading').show();
@@ -262,10 +266,15 @@ function ok() {
       $('#ajaxloading').fadeOut();
 
       if (data.nomember) {
-         $('#denied').fadeIn();
-         setTimeout("$('#denied').fadeOut();",3 * 1000);
+         $('#error_title').html('<b>Access Denied</b>');
+         $('#error_message').html('You are not a member. ' +
+                                  '<a href="http://signup.hackerdojo.com">' +
+                                  'Click here</a> to sign up, or reactivate' +
+                                  ' your account.');
+         $('#error').fadeIn();
+      } else if (data.status == "upgrade") {
+        $('#upgrade').fadeIn();
       } else {
-
         $("#thanksmessage").html("<b><nobr>Thanks "+data.name+"!</nobr></b><br/><br/><small>Visit #"+data.signins+"</small>");
         if (data.tos) {
           $('#ajaxloading').hide();
@@ -284,11 +293,16 @@ function thanks() {
   $("#banner").hide().fadeIn(1500);
   $("#tos").hide();
   $("#thanks").fadeIn();
-  window.audio = new Audio("/static/login.mp3");      
+  window.audio = new Audio("/static/login.mp3");
   window.audio.play();
   increment_counter();
   setTimeout('$("#thanks").fadeOut(1000);',2*1000);
   $('input[name=email]').focus();
+}
+
+/* Close the error window. */
+function close_error_window() {
+  $('#error').fadeOut();
 }
 
 function increment_counter() {
@@ -326,11 +340,11 @@ $(document).ready(function() {
   window.oldfoc = setInterval('$("#em").focus();',1000);
   auto_reset();
 
+  $('#error').click(close_error_window);
+
   $("#em").live('blur', function() {
     setTimeout('$("#em").focus();',16);
   });
-
-
 });
 
 

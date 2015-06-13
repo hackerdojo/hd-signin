@@ -219,15 +219,36 @@ class SigninHandler(webapp.RequestHandler):
 
     if email and type:
       # Perform an API request for the signup application.
+      response = {}
       if type == "Member":
-        base_url = "http://signup.hackerdojo.com/api/v1/signin"
-        query = {"email": email}
-        result = urlfetch.fetch(base_url, method="POST", payload=query)
+        base_url = "http://127.0.0.1:8080/api/v1/signin"
+        query_str = urllib.urlencode({"email": email})
+        result = urlfetch.fetch(base_url, method=urlfetch.POST,
+                                payload=query_str)
         logging.info("Got response from signup app: %s" % (result.content))
 
         if result.status_code != 200:
-          response = {"error": "Backend API request failed."}
+          error_json = json.loads(result.content)
+          if error_json["type"] == "InvalidEmailException":
+            logging.debug("User %s is not an active member." % (email))
+            response["nomember"] = True
+            self.response.out.write(json.dumps(response))
+            return
+
           self.response.set_status(500)
+          response = {"error": "Backend API call failed."}
+          self.response.out.write(json.dumps(response))
+          return
+
+        member_json = json.loads(result.content)
+        if not member_json["visits_remaining"]:
+          # No more visits left this month.
+          logging.debug("User %s needs to upgrade." % (email))
+          response["status"] = "upgrade"
+        else:
+          response["status"] = "normal"
+      else:
+        response["status"] = "normal"
 
       signin = Signin.signin(email, type)
       record = SigninRecord.signin(email, datetime.now())
@@ -236,7 +257,10 @@ class SigninHandler(webapp.RequestHandler):
         tos = True
       # PSUEDO CODE: if record.last_signin < date of last TOS change
       # PSUEDO CODE:   tos = True
-      response = {"signins":record.signins, "name":signin.name, "tos":tos}
+
+      response["signins"] = record.signins
+      response["name"] = signin.name
+      response["tos"] = tos
     else:
       response = {"error": "need to specify email and type"}
 
