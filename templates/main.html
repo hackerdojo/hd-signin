@@ -2,9 +2,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
   <title>Sign in</title>
-  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script type="text/javascript" src="/static/md5.js"></script>
   <script type="text/javascript" src="/static/signin.js?v=14"></script>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+  <!-- Bootstrap JS -->
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
   <link rel="stylesheet" type="text/css" href="/static/signin.css?v=14" />
 </head>
 <body id="body">
@@ -112,6 +116,21 @@
     <h3><p style="text-align: center" id="error_message">&nbsp;</p></h3>
 </div>
 
+<div id="upgrade" class="corners"
+    style="padding: 4em; display: none; color: black; position: absolute;
+           z-index: 2; top: 35%; left: 25%; width: 40%;
+           border: 2px solid #7786CC; background: #95A8FF;">
+    <h1><center id="upgrade_title">Out of Visits</center></h1>
+    <h3><p style="text-align: center" id="upgrade_message">
+        You have no more visits remaining this month. If you want more, you must
+        upgrade your plan.
+    </p></h3>
+    <center><a href="http://signup.hackerdojo.com" role="button"
+        class="btn btn-success btn-lg btn-block"
+        style="margin-top: 2em">Upgrade</a></center>
+</div>
+
+
 <div id="ccthanks" class="corners" style="padding:2em; display:none; position:absolute; z-index:2; top:35%; left:29%; width:35%; border:2px solid #227b1b; background:#b5e5b2 ">
   <img src="/static/check.png" height="130" width="130" align="left" style="margin-right:1em">
       <p style="text-align:center; font-size:180%" id="ccamount">&nbsp;</p>
@@ -156,9 +175,9 @@
   {% else %}
     <img style="margin:1.5em" src="/static/logo.png" width="690" height="244" />
   {% endif %}
-  
-  <h2>Please Sign In</h2>
-  
+
+  <h1 style="margin:1.5em">Please Sign In</h1>
+
   {% if current_event.custom_html %}
     {{current_event.custom_html}}
     <br>

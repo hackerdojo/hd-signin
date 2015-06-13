@@ -221,7 +221,7 @@ class SigninHandler(webapp.RequestHandler):
       # Perform an API request for the signup application.
       response = {}
       if type == "Member":
-        base_url = "http://127.0.0.1:8080/api/v1/signin"
+        base_url = "http://signup.hackerdojo.com/api/v1/signin"
         query_str = urllib.urlencode({"email": email})
         result = urlfetch.fetch(base_url, method=urlfetch.POST,
                                 payload=query_str)
@@ -247,6 +247,7 @@ class SigninHandler(webapp.RequestHandler):
           response["status"] = "upgrade"
         else:
           response["status"] = "normal"
+          response["visits_remaining"] = member_json["visits_remaining"]
       else:
         response["status"] = "normal"
 

@@ -275,7 +275,15 @@ function ok() {
       } else if (data.status == "upgrade") {
         $('#upgrade').fadeIn();
       } else {
-        $("#thanksmessage").html("<b><nobr>Thanks "+data.name+"!</nobr></b><br/><br/><small>Visit #"+data.signins+"</small>");
+        var visit_message = 'Visit #' + data.signins;
+        if (data.visits_remaining != 'None') {
+          visit_message = data.visits_remaining + ' visits remaining' +
+                          ' this month.';
+        }
+        $("#thanksmessage").html('<b><nobr>Thanks '+data.name+'!' +
+                                 '</nobr></b><br/><br/><small>' + visit_message
+                                 + '</small>');
+
         if (data.tos) {
           $('#ajaxloading').hide();
           $('#tos').fadeIn();
@@ -296,13 +304,15 @@ function thanks() {
   window.audio = new Audio("/static/login.mp3");
   window.audio.play();
   increment_counter();
-  setTimeout('$("#thanks").fadeOut(1000);',2*1000);
+  setTimeout('$("#thanks").fadeOut(1000);',3*1000);
   $('input[name=email]').focus();
 }
 
-/* Close the error window. */
-function close_error_window() {
+/* Close all popup windows. */
+function close_popups() {
   $('#error').fadeOut();
+  $('#thanks').fadeOut();
+  $('#upgrade').fadeOut();
 }
 
 function increment_counter() {
@@ -340,11 +350,8 @@ $(document).ready(function() {
   window.oldfoc = setInterval('$("#em").focus();',1000);
   auto_reset();
 
-  $('#error').click(close_error_window);
-
-  $("#em").live('blur', function() {
-    setTimeout('$("#em").focus();',16);
-  });
+  $('#error').click(close_popups);
+  $('#upgrade').click(close_popups);
 });
 
 
