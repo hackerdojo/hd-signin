@@ -203,6 +203,7 @@ function clickmember() {
 
 /* Set the type and proceed with signin */
 function go(x) {
+  console.log("Running go function.");
   if (isEmail($("input[name=email]").val())) {
     document.getElementById("ttt").value = x;
     $('#rfidwelcome').fadeOut();
@@ -242,9 +243,10 @@ function prepare_for_signin() {
   $("input[type=text]").val("");
   $('input[name=email]').focus();
 }
-  
-/* Do the actual signin */  
+
+/* Do the actual signin */
 function ok() {
+  console.log("Running ok function.");
   $("#tos").fadeOut();
   main_screen_turn_on = false;
   $('#ajaxloading').show();
@@ -254,26 +256,26 @@ function ok() {
     data: $('#ajax_form').serialize(),
     timeout: 14 * 1000,
     error: function(data) {
-      auto_reset();      
+      auto_reset();
     },
     success: function(data) {
       $('#ajaxloading').fadeOut();
-      
+
       if (data.nomember) {
          $('#denied').fadeIn();
          setTimeout("$('#denied').fadeOut();",3 * 1000);
       } else {
 
-        $("#thanksmessage").html("<b><nobr>Thanks "+data.name+"!</nobr></b><br/><br/><small>Visit #"+data.signins+"</small>");      
+        $("#thanksmessage").html("<b><nobr>Thanks "+data.name+"!</nobr></b><br/><br/><small>Visit #"+data.signins+"</small>");
         if (data.tos) {
           $('#ajaxloading').hide();
           $('#tos').fadeIn();
-        } else {        
+        } else {
           thanks();
         }
       }
       prepare_for_signin();
-    }
+    },
   });
 }
 
@@ -318,11 +320,6 @@ function refreshPage() {
 }
 
 $(document).ready(function() {
-  if (!window.location.href.match("localhost") && !window.location.href.match("fast")) {
-     if (window.location.protocol != "http:" || window.location.hostname != "hackerdojo-signin.appspot.com") {
-        window.location.href = "http://hackerdojo-signin.appspot.com/";
-     }
-  }
   if (!window.location.href.match("fast")) {
     window.oldint = setInterval(refreshPage,15 *60* 1000);
   }

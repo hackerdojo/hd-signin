@@ -1,10 +1,7 @@
-#!/usr/bin/env python
-
 import wsgiref.handlers
 
 from google.appengine.api import channel
 from google.appengine.api.labs import taskqueue
-from google.appengine.ext import webapp
 from google.appengine.api import users, memcache
 from google.appengine.ext.webapp import template
 from google.appengine.ext import deferred
@@ -91,12 +88,12 @@ class EventModeHandler(webapp.RequestHandler):
     )
     new_event.put()
     self.redirect('/eventmode')
-    
+
 
 class DailyCount(db.Model):
   day = db.DateProperty(required=True)
   count = db.IntegerProperty(required=True)
-    
+
   @classmethod
   def get(cls):
     count_rec = cls.all().filter('day =', datetime.now(Pacific()).date()).get()
@@ -114,9 +111,9 @@ class DailyCount(db.Model):
     else:
         count_rec = DailyCount(day=datetime.now(Pacific()).date(),count=1)
     count_rec.put()
-    return count_rec.count  
+    return count_rec.count
 
-    
+
 # A log of all signins.  One row per signin.
 class Signin(db.Model):
   email = db.StringProperty(required=True)
@@ -147,7 +144,7 @@ class Signin(db.Model):
             body="You were automatically signed out after "+ str(MAX_SIGNIN_TIME/60/60) + " hours.\n\n"+
                  "You can always sign-in again at http://hackerdojo-signin.appspot.com/ if you are still here.\n\n")
     return staffers
-  
+
   @classmethod
   def deactivate_staffer(cls, email):
     staffer = cls.get_active_staff().filter('email =', email).get()
@@ -156,7 +153,7 @@ class Signin(db.Model):
     td = datetime.now()-staffer.created
     staffer.time_delta = (td.days*86400)+td.seconds
     staffer.put()
-  
+
   def name_or_nick(self):
     return self.name or self.email.split('@')[0]
 
@@ -175,7 +172,7 @@ class Signin(db.Model):
       except:
         logging.info("Failed deactivating old Signin object.")
     s = Signin(email=email, type=type, image_url=image, name=name)
-    DailyCount.increment_and_get()    
+    DailyCount.increment_and_get()
     s.put()
     if "xxxxx.xxxxx" in email or "yyyy.yyyy" in email:
         mail.send_mail(sender="Signin Machine <signin@hackerdojo.com>", to="Emergency Paging System <page@hackerdojo.com>",
@@ -189,7 +186,7 @@ class SigninRecord(db.Model):
   first_signin = db.DateTimeProperty(auto_now_add=True)
   last_signin = db.DateTimeProperty()
   signins = db.IntegerProperty()
-  
+
   @classmethod
   def signin(cls, email, when):
     rec = cls.all().filter('email =', email).get()
@@ -221,6 +218,17 @@ class SigninHandler(webapp.RequestHandler):
         return
 
     if email and type:
+      # Perform an API request for the signup application.
+      if type == "Member":
+        base_url = "http://signup.hackerdojo.com/api/v1/signin"
+        query = {"email": email}
+        result = urlfetch.fetch(base_url, method="POST", payload=query)
+        logging.info("Got response from signup app: %s" % (result.content))
+
+        if result.status_code != 200:
+          response = {"error": "Backend API request failed."}
+          self.response.set_status(500)
+
       signin = Signin.signin(email, type)
       record = SigninRecord.signin(email, datetime.now())
       tos = False
@@ -238,8 +246,8 @@ class SigninHandler(webapp.RequestHandler):
                         payload=self.request.query_string,
                         method=urlfetch.POST,
                         headers={'Content-Type': 'application/x-www-form-urlencoded'})
-    
-    
+
+
     self.response.out.write(json.dumps(response))
 
 # Initializes SigninRecord database (see util.py)
@@ -255,26 +263,26 @@ class CountHandler(webapp.RequestHandler):
     for s in SigninRecord.all():
       i = i + s.signins
     self.response.out.write(str(i))
-  
+
 # Exports e-mail addresses (usually disabled)
 class ExportHandler(webapp.RequestHandler):
   def get(self):
     for e in SigninRecord.all():
       self.response.out.write(e.email+"\n")
 
-# Renders the main page      
+# Renders the main page
 class CCHandler(webapp.RequestHandler):
   def get(self):
     self.response.out.write(template.render('templates/cc.html', locals()))
-  
+
 
 # Renders fast track page
 class FastHandler(webapp.RequestHandler):
   def get(self):
     self.response.out.write(template.render('templates/fast.html', locals()))
-  
 
-# Renders the main page      
+
+# Renders the main page
 class MainHandler(webapp.RequestHandler):
   def get(self):
     today_count = DailyCount.get()
@@ -291,6 +299,7 @@ class MainHandler(webapp.RequestHandler):
   def post(self):
     email = self.request.get('email')
     type = self.request.get('type')
+
     Signin.signin(email, type)
     self.redirect('/')
 
@@ -450,7 +459,7 @@ class CStatsHandler(webapp.RequestHandler):
     self.response.headers.add_header('Content-disposition',"attachment;filename=signin-cstats-"+format+".csv")
     self.response.out.write("Date,Total Signins")
     self.response.out.write("\n")
-    
+
     for signin in DailyCount.all().order("day"):
       ts = string.replace(signin.day.strftime(date_format),"Week 00","Week 01")
       if ts not in days:
@@ -459,7 +468,7 @@ class CStatsHandler(webapp.RequestHandler):
 
     ordered_days = days.keys()
     ordered_days.sort()
-    
+
     for day in ordered_days:
       self.response.out.write(day)
       self.response.out.write(",")
@@ -480,7 +489,7 @@ class StatsHandler(webapp.RequestHandler):
         self.response.out.write(",")
         self.response.out.write(t)
     self.response.out.write("\n")
-    
+
     for signin in Signin.all().order("created"):
       ts = string.replace(signin.created.strftime(date_format),"Week 00","Week 01")
       if ts not in days:
@@ -495,7 +504,7 @@ class StatsHandler(webapp.RequestHandler):
 
     ordered_days = days.keys()
     ordered_days.sort()
-    
+
     for day in ordered_days:
       self.response.out.write(day)
       for t in interested:
@@ -530,7 +539,7 @@ class ChargeHandler(webapp.RequestHandler):
                           year = "20"+self.request.get('year'),
                           first_name = first_name,
                           last_name = last_name,
-                          code = ''    
+                          code = ''
                           )
         name = first_name + " " + last_name
         gateway = AimGateway(auth_net_login_id, auth_net_trans_key)
@@ -543,10 +552,10 @@ class ChargeHandler(webapp.RequestHandler):
         response = gateway.sale(amount, card)
         d = Donation(amount=amount, transaction_id=response.trans_id, status=response.status_strings[response.status], status_code=response.status, name=name)
         d.put()
-        self.response.out.write(json.dumps({"trans_id": response.trans_id, 
+        self.response.out.write(json.dumps({"trans_id": response.trans_id,
                                                   "amount": amount,
                                                   "dollar_amount": dollar_amount,
-                                                  "status": response.status_strings[response.status], 
+                                                  "status": response.status_strings[response.status],
                                                   "status_code": response.status,
                                                   "message": response.message}))
 
@@ -569,7 +578,6 @@ class JSONHandler(webapp.RequestHandler):
 # Used to power there@hackerdojo.com - send e-mail to everyone "there" (signed in) at the Dojo
 #class MailHandler(InboundMailHandler):
 #    def receive(self, mail_message):
-#        
 #        staff = Signin.get_active_staff()
 #        count = staff.count(1000)
 #        if count > 0:
@@ -599,9 +607,20 @@ class FetchUsersHandler(webapp.RequestHandler):
       else:
           self.response.out.write("500 - Something broke")
 
+
+""" Handler for making signin API call to signup app. """
+class SigninApiHandler(webapp.RequestHandler):
+  """ email: The email of the user to sign in.
+  Statuses: 200 if the signin worked, 401 if a plan upgrade is needed, and 500
+  if anything else failed. """
+  def get(self, email):
+    base_url = "signup.hackerdojo.com/api/v1/signin"
+    query = {"email": email}
+
+
 app = webapp.WSGIApplication([
-        ('/', MainHandler), 
-        ('/cc', CCHandler), 
+        ('/', MainHandler),
+        ('/cc', CCHandler),
         #(r'^/_ah/mail/there.*', MailHandler),
     ('/eventmode', EventModeHandler),
     ('/report/donations', DonationReportHandler),
@@ -610,19 +629,18 @@ app = webapp.WSGIApplication([
     ('/ministaff', MiniStaffHandler),
     ('/fast', FastHandler),
     ('/signin', SigninHandler),
-    ('/staff', StaffHandler),                
-    ('/cron/fetchusers', FetchUsersHandler),                
-    ('/api/doorlog', DoorLogHandler),                
-    ('/api/charge', ChargeHandler),                
+    ('/staff', StaffHandler),
+    ('/cron/fetchusers', FetchUsersHandler),
+    ('/api/doorlog', DoorLogHandler),
+    ('/api/charge', ChargeHandler),
     ('/sstats/?', StatHandler),
     ('/sstats/(.+)', StatsHandler),
     ('/cstats/(.+)', CStatsHandler),
     ('/log', LogHandler),
     ('/rtlog/ch(\d)', RTLogHandler),
-    # ('/initrecords', InitRecordsHandler), 
-    ('/count', CountHandler), 
-    # ('/export', ExportHandler), 
+    # ('/initrecords', InitRecordsHandler),
+    ('/count', CountHandler),
+    # ('/export', ExportHandler),
     #('/appreciationemail', AppreciationEmailHandler),
         ('/staffjson', JSONHandler),
         ], debug=True)
-  
