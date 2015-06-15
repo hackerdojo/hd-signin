@@ -254,7 +254,7 @@ class SigninHandler(webapp.RequestHandler):
           return
 
         member_json = json.loads(result.content)
-        if not member_json["visits_remaining"]:
+        if member_json["visits_remaining"] == 0:
           # No more visits left this month.
           logging.debug("User %s needs to upgrade." % (email))
           response["status"] = "upgrade"
@@ -549,14 +549,29 @@ class StatsHandler(webapp.RequestHandler):
 
 class DoorLogHandler(webapp.RequestHandler):
     def get(self):
-        if self.request.get('door') and self.request.get('status'):
+        if self.request.get("door") and self.request.get("status"):
           dl = DoorLog(
-            username = self.request.get('username'),
-            status = self.request.get('status'),
-            rfid_tag = self.request.get('rfid_tag'),
-            door = self.request.get('door')
+            username = self.request.get("username"),
+            status = self.request.get("status"),
+            rfid_tag = self.request.get("rfid_tag"),
+            door = self.request.get("door")
             )
           dl.put()
+
+          # Sign in the user, if the front door opened for them.
+          if (self.request.get("door") == "599main" and \
+              self.request.get("status") == "granted"):
+            base_url = "http://signup.hackerdojo.com/api/v1/rfid"
+            params = {"id": self.request.get("rfid_tag")}
+            params = urllib.urlencode(params)
+            response = urlfetch.Fetch(base_url, method=urlfetch.POST,
+                                      payload=params)
+            logging.debug("Got response from signup API: %s" % \
+                          (response.content))
+
+            if response.status_code != 200:
+              logging.error("RFID API request failed.")
+
           self.response.out.write(json.dumps({"result": "ok"}))
         else:
           self.response.out.write(json.dumps({"error": "must specify 'door' and 'status' parameters"}))
@@ -670,7 +685,7 @@ class RfidApiHandler(webapp.RequestHandler):
     signin = Signin.signin(user_info["email"], "Member")
     record = SigninRecord.signin(user_info["email"], datetime.now())
 
-    if not user_info["visits_remaining"]:
+    if user_info["visits_remaining"] == 0:
       logging.debug("User %s needs to upgrade." % (user_info["name"]))
       to_send["status"] = "upgrade"
     else:
