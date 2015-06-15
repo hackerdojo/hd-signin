@@ -34,6 +34,18 @@ MAX_SIGNIN_TIME = 60 * 60 * 8
 def parse_json(data):
   return json.loads(data.replace('/*-secure-','').replace('*/', ''))
 
+
+""" Calls the hook for the current event, if it is going on.
+handler: The handler object we are using. """
+def handle_current_event(handler):
+  current_event = Event.get_current_event()
+  if current_event and datetime.now()>current_event.from_time and datetime.now() < current_event.to_time:
+    urlfetch.fetch(url=current_event.webhook_url,
+                   payload=handler.request.query_string,
+                   method=urlfetch.POST,
+                   headers={'Content-Type': 'application/x-www-form-urlencoded'})
+
+
 class DoorLog(db.Model):
   event_time = db.DateTimeProperty(auto_now_add=True)
   door = db.StringProperty()
@@ -234,6 +246,7 @@ class SigninHandler(webapp.RequestHandler):
             response["nomember"] = True
             self.response.out.write(json.dumps(response))
             return
+          response["nomember"] = False
 
           self.response.set_status(500)
           response = {"error_message": "Backend API call failed."}
@@ -265,13 +278,7 @@ class SigninHandler(webapp.RequestHandler):
     else:
       response = {"error_message": "need to specify email and type"}
 
-    current_event = Event.get_current_event()
-    if current_event and datetime.now()>current_event.from_time and datetime.now() < current_event.to_time:
-      urlfetch.fetch(url=current_event.webhook_url,
-                        payload=self.request.query_string,
-                        method=urlfetch.POST,
-                        headers={'Content-Type': 'application/x-www-form-urlencoded'})
-
+    handle_current_event(self)
 
     self.response.out.write(json.dumps(response))
 
@@ -633,14 +640,50 @@ class FetchUsersHandler(webapp.RequestHandler):
           self.response.out.write("500 - Something broke")
 
 
-""" Handler for making signin API call to signup app. """
-class SigninApiHandler(webapp.RequestHandler):
-  """ email: The email of the user to sign in.
-  Statuses: 200 if the signin worked, 401 if a plan upgrade is needed, and 500
-  if anything else failed. """
-  def get(self, email):
-    base_url = "signup.hackerdojo.com/api/v1/signin"
-    query = {"email": email}
+""" Handler for making RFID API call to signup app. """
+class RfidApiHandler(webapp.RequestHandler):
+  """ key: The RFID key of the user. """
+  def get(self, key):
+    base_url = "http://signup.hackerdojo.com/api/v1/rfid"
+    query_str = urllib.urlencode({"id": key})
+    response = urlfetch.fetch(base_url, method=urlfetch.POST,
+                              payload=query_str)
+    logging.info("Got response from API: %s" % (response.content))
+
+    to_send = {}
+    if response.status_code != 200:
+      error = json.loads(response.content)
+      if error["type"] == "InvalidKeyException":
+        # It signed in a bad key.
+        to_send["bad_key"] = True
+        self.response.out.write(json.dumps(to_send))
+        return
+      to_send["bad_key"] = False
+
+      self.response.set_status(500)
+      to_send = {"error": "Backend API request failed."}
+
+    handle_current_event(self)
+
+    user_info = json.loads(response.content)
+
+    signin = Signin.signin(user_info["email"], "Member")
+    record = SigninRecord.signin(user_info["email"], datetime.now())
+
+    if not user_info["visits_remaining"]:
+      logging.debug("User %s needs to upgrade." % (user_info["name"]))
+      to_send["status"] = "upgrade"
+    else:
+      to_send["status"] = "normal"
+      to_send["visits_remaining"] = user_info["visits_remaining"]
+
+    to_send["gravatar"] = user_info["gravatar"]
+    to_send["name"] = user_info["name"]
+    to_send["username"] = user_info["username"]
+    to_send["auto_signin"] = user_info["auto_signin"]
+    to_send["signins"] = record.signins
+
+    self.response.out.write(json.dumps(to_send))
 
 
 app = webapp.WSGIApplication([
@@ -667,5 +710,6 @@ app = webapp.WSGIApplication([
     ('/count', CountHandler),
     # ('/export', ExportHandler),
     #('/appreciationemail', AppreciationEmailHandler),
-        ('/staffjson', JSONHandler),
-        ], debug=True)
+    ('/staffjson', JSONHandler),
+    ('/rfid/(.+)', RfidApiHandler),
+    ], debug=True)

@@ -59,17 +59,19 @@ function charge(cc,month,year,first,last) {
    }
   });
 }
-      
-function stopRKey(evt) { 
-  var evt = (evt) ? evt : ((event) ? event : null); 
-  var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null); 
+
+function stopRKey(evt) {
+  var evt = (evt) ? evt : ((event) ? event : null);
+  var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null);
   var em = $("input[name=email]").val();
-      
-  if (evt.keyCode)
+
+  if (evt.keyCode) {
     code = evt.keyCode;
-  else 
-    if (evt.which)
+  } else {
+    if (evt.which) {
       code = evt.which;
+    }
+  }
 
   if (main_screen_turn_on) {
     if (code == 49) go('Anonymous');
@@ -77,19 +79,19 @@ function stopRKey(evt) {
     if (code == 52) cancel();
     return false;
   }
-  
+
   if (code === 37 || code === 59) {
     // if the input is either a semicolon or percent sign, make input field font white
     $("input[name=email]").css('font-color', '#fff');
   }
-  
-  if ((code == 13) && (node.type=="text"))  {    
+
+  if ((code == 13) && (node.type=="text"))  {
     setTimeout(function() {
       $("input[name=email]").css('font-color', '#000');
     }, 1000);
-    
+
     raw = $("input[name=email]").val();
-    
+
     if (m = raw.match(/^;([0-9]{14,16})=([0-9]{2})([0-9]{2})[0-9]{11}\?/)) {
       var month = m[3];
       var year = m[2];
@@ -104,7 +106,7 @@ function stopRKey(evt) {
       var last = m[2];
       var cc = m[1];
       charge(cc,month,year, first, last); 
-      return;     
+      return;
     }
     if (m = raw.match(/^[;%]E.*\?/)) {
       // Error
@@ -129,37 +131,33 @@ function stopRKey(evt) {
     entered = $("input[name=email]").val().replace(/^\;/, "").replace(/\?$/, "");
 
     /* RFID is numeric */
-    console.log("Making callback.");
     if (entered > 0) {
       $("input[name=email]").val("");
       $('#ajaxloading').fadeIn();
       $.ajax({
-        url: 'http://signup.hackerdojo.com/api/rfid?id='+entered+'&callback=?',
+        url: 'rfid/' + entered,
         dataType: "json",
         timeout: 14 * 1000,
-        error: function(data) {
-          auto_reset();
+        error: function(jqXHR, textStatus, errorThrown) {
+          $('#ajaxloading').fadeOut();
+          $('#error_title').html('<b>Signin Error</b>');
+          $('#error_message').html(errorThrown);
+          $('#error').fadeIn();
         },
         success: function(data) {
           $('#ajaxloading').fadeOut();
-          if (data && data.username) {
-            main_screen_turn_on = true;
-//            $('#rfidwelcome').fadeIn();
-            $("input[name=email]").val(data.username + "@hackerdojo.com");
-            $('.rfidpic').attr("src",data.gravatar);
-            $('.rfidname').html(data.name);
-            if (data.auto_signin==1) {
-              go('Anonymous');
-            } else {
-              go('Member');
+          if (data.status == "upgrade") {
+            // User needs to upgrade.
+            $('#upgrade').fadeIn();
+          } else if (!data.bad_key) {
+            // We're signed in.
+            var visit_message = 'Visit #' + data.signins;
+            if (data.visits_remaining) {
+              visit_message = data.visits_remaining + ' visits remaining' +
+                              ' this month.';
             }
 
-//            if (data.auto_signin && data.auto_signin > 0 && data.auto_signin < 4) {
-//              $('#auto').slideDown();
-//              $('#count').attr("src","/static/countdown.gif");
-//              window.auto = setTimeout("autosignin("+data.auto_signin+");",5000);
-//            }
-
+            thanks(data.name, visit_message);
           } else {
             prepare_for_signin();
             audio = new Audio("/static/denied.mp3");
@@ -175,21 +173,20 @@ function stopRKey(evt) {
     }
     return false;
   }
-}
+};
 
 function cancel() {
   main_screen_turn_on = false;
   auto_reset();
-}
+};
 
-
-document.onkeypress = stopRKey; 
-document.onkeydown = capstaff; 
+document.onkeypress = stopRKey;
+document.onkeydown = capstaff;
 
 String.prototype.capitalize = function(){
    return this.replace( /(^|\s)([a-z])/g , function(m,p1,p2){ return p1+p2.toUpperCase(); } );
 };
-  
+
 function clickmember() {
   var em = $("input[name=email]").val();  
   if (em.indexOf("@hackerdojo.com")==-1) {
@@ -217,7 +214,7 @@ function go(x) {
     $('#auto').hide();
     if (window.auto) {
       clearTimeout(window.auto);
-    }        
+    }
     ok();
   } else {
     alert("Please enter a valid e-mail address");
@@ -279,19 +276,16 @@ function ok() {
         $('#upgrade').fadeIn();
       } else {
         var visit_message = 'Visit #' + data.signins;
-        if (data.visits_remaining && data.visits_remaining != 'None') {
+        if (data.visits_remaining) {
           visit_message = data.visits_remaining + ' visits remaining' +
                           ' this month.';
         }
-        $("#thanksmessage").html('<b><nobr>Thanks '+data.name+'!' +
-                                 '</nobr></b><br/><br/><small>' + visit_message
-                                 + '</small>');
 
         if (data.tos) {
           $('#ajaxloading').hide();
           $('#tos').fadeIn();
         } else {
-          thanks();
+          thanks(data.name, visit_message);
         }
       }
       prepare_for_signin();
@@ -300,9 +294,14 @@ function ok() {
 }
 
 /* After a user signs in */
-function thanks() {
+function thanks(name, visit_message) {
   $("#banner").hide().fadeIn(1500);
   $("#tos").hide();
+
+  $("#thanksmessage").html('<b><nobr>Thanks ' + name + '!' +
+                           '</nobr></b><br/><br/><small>' + visit_message
+                                 + '</small>');
+
   $("#thanks").fadeIn();
   window.audio = new Audio("/static/login.mp3");
   window.audio.play();
