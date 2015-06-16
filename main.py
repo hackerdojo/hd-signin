@@ -554,7 +554,7 @@ class ChargeHandler(webapp.RequestHandler):
 class JSONHandler(webapp.RequestHandler):
   def get(self):
     staff = Signin.get_active_staff()
-    
+
     def to_dict(staffer):
         return dict(
             name=staffer.name_or_nick(),
@@ -563,8 +563,8 @@ class JSONHandler(webapp.RequestHandler):
             type=staffer.type,
             created=staffer.created.strftime("%m-%d-%Y %H:%M:%S"),
             refTime=datetime.now().strftime("%m-%d-%Y %H:%M:%S"),)
-            
-    self.response.out.write(wjson.dumps([to_dict(staffer) for staffer in staff]))
+
+    self.response.out.write(json.dumps([to_dict(staffer) for staffer in staff]))
 
 # Used to power there@hackerdojo.com - send e-mail to everyone "there" (signed in) at the Dojo
 #class MailHandler(InboundMailHandler):
