@@ -1,5 +1,5 @@
 #!/usr/bin/env python
- 
+
 import wsgiref.handlers
 
 from google.appengine.api import channel
@@ -15,8 +15,8 @@ from google.appengine.ext.webapp.util import login_required
 from datetime import tzinfo, datetime, timedelta
 import urllib, hashlib, time, random
 import logging, email
-from google.appengine.ext import webapp 
-from google.appengine.ext.webapp.mail_handlers import InboundMailHandler 
+from google.appengine.ext import webapp
+from google.appengine.ext.webapp.mail_handlers import InboundMailHandler
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.api import mail
 import json
@@ -71,7 +71,7 @@ class Event(db.Model):
     current_event = cls.all().get()
     if current_event:
       current_event.delete()
-  
+
 # Configure a special event
 class EventModeHandler(webapp.RequestHandler):
   def get(self):
@@ -591,7 +591,8 @@ class JSONHandler(webapp.RequestHandler):
 
 class FetchUsersHandler(webapp.RequestHandler):
   def get(self):
-      resp = urlfetch.fetch('http://hd-domain-hrd.appspot.com/users', deadline=20)
+      resp = urlfetch.fetch('http://hd-domain-hrd.appspot.com/users',
+                            deadline=20, follow_redirects=False)
       if resp.status_code == 200:
           memcache.set('usernames', resp.content, 3600*2)
           self.response.out.write("<h1>200 OK - Usernames set</h1>")
