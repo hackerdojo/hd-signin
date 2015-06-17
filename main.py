@@ -233,7 +233,7 @@ class SigninHandler(webapp.RequestHandler):
       # Perform an API request for the signup application.
       response = {}
       if type == "Member":
-        base_url = "http://signup.hackerdojo.com/api/v1/signin"
+        base_url = "http://hd-signup-hrd.appspot.com/api/v1/signin"
         query_str = urllib.urlencode({"email": email})
         result = urlfetch.fetch(base_url, method=urlfetch.POST,
                                 payload=query_str, follow_redirects=False)
@@ -561,7 +561,7 @@ class DoorLogHandler(webapp.RequestHandler):
           # Sign in the user, if the front door opened for them.
           if (self.request.get("door") == "599main" and \
               self.request.get("status") == "granted"):
-            base_url = "http://signup.hackerdojo.com/api/v1/rfid"
+            base_url = "http://hd-signup-hrd.appspot.com/api/v1/rfid"
             params = {"id": self.request.get("rfid_tag")}
             params = urllib.urlencode(params)
             response = urlfetch.Fetch(base_url, method=urlfetch.POST,
@@ -659,7 +659,7 @@ class FetchUsersHandler(webapp.RequestHandler):
 class RfidApiHandler(webapp.RequestHandler):
   """ key: The RFID key of the user. """
   def get(self, key):
-    base_url = "http://signup.hackerdojo.com/api/v1/rfid"
+    base_url = "http://hd-signup-hrd.appspot.com/api/v1/rfid"
     query_str = urllib.urlencode({"id": key})
     response = urlfetch.fetch(base_url, method=urlfetch.POST,
                               payload=query_str, follow_redirects=False)
