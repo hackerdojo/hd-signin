@@ -236,7 +236,7 @@ class SigninHandler(webapp.RequestHandler):
         base_url = "http://signup.hackerdojo.com/api/v1/signin"
         query_str = urllib.urlencode({"email": email})
         result = urlfetch.fetch(base_url, method=urlfetch.POST,
-                                payload=query_str)
+                                payload=query_str, follow_redirects=False)
         logging.info("Got response from signup app: %s" % (result.content))
 
         if result.status_code != 200:
@@ -565,7 +565,7 @@ class DoorLogHandler(webapp.RequestHandler):
             params = {"id": self.request.get("rfid_tag")}
             params = urllib.urlencode(params)
             response = urlfetch.Fetch(base_url, method=urlfetch.POST,
-                                      payload=params)
+                                      payload=params, follow_redirects=False)
             logging.debug("Got response from signup API: %s" % \
                           (response.content))
 
@@ -662,7 +662,7 @@ class RfidApiHandler(webapp.RequestHandler):
     base_url = "http://signup.hackerdojo.com/api/v1/rfid"
     query_str = urllib.urlencode({"id": key})
     response = urlfetch.fetch(base_url, method=urlfetch.POST,
-                              payload=query_str)
+                              payload=query_str, follow_redirects=False)
     logging.info("Got response from API: %s" % (response.content))
 
     to_send = {}
