@@ -219,16 +219,6 @@ class SigninHandler(webapp.RequestHandler):
     # time.sleep(2)
     type = self.request.get('type')
 
-    if "@hackerdojo.com" in email:
-      usernames = memcache.get('usernames')
-      username = string.split(email,"@")[0]
-      if usernames and "[" in usernames and username not in usernames:
-        response = {"error": "Member not found", "nomember":"true"}
-        self.response.out.write(json.dumps(response))
-        for ch in (range(1,3)):
-          channel.send_message("CH"+str(ch),json.dumps({"email":email,"first":"","last":"","count":-1}))
-        return
-
     if email and type:
       # Perform an API request for the signup application.
       response = {}
@@ -470,17 +460,6 @@ class DoorLogReportHandler(webapp.RequestHandler):
 #  signins = db.IntegerProperty()
 #
 
-class RecentActiveHandler(webapp.RequestHandler):
-  def get(self):
-    for signin in SigninRecord.all().order("-signins"):
-      if "2013-02" in str(signin.last_signin) and signin.signins>1:
-        self.response.out.write(signin.email)
-        self.response.out.write(",")
-        self.response.out.write(signin.signins)
-        self.response.out.write(",")
-        self.response.out.write(signin.last_signin)
-        self.response.out.write("<br/>")
-
 # Used by /stats/*
 class CStatsHandler(webapp.RequestHandler):
   def get(self,format):
@@ -707,7 +686,6 @@ app = webapp.WSGIApplication([
         #(r'^/_ah/mail/there.*', MailHandler),
     ('/eventmode', EventModeHandler),
     ('/report/donations', DonationReportHandler),
-    ('/report/recentactive', RecentActiveHandler),
     ('/report/doorlog', DoorLogReportHandler),
     ('/ministaff', MiniStaffHandler),
     ('/fast', FastHandler),
