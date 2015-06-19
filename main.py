@@ -307,6 +307,13 @@ class FastHandler(webapp.RequestHandler):
 # Renders the main page
 class MainHandler(webapp.RequestHandler):
   def get(self):
+    # This is running on shared computers, so we don't want to leave anybody
+    # logged in.
+    if users.get_current_user():
+      logging.info("Logging out current user.")
+      self.redirect(users.create_logout_url(self.request.uri))
+      return
+
     today_count = DailyCount.get()
     if today_count > 1:
       today_count_signigicant = True
