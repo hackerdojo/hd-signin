@@ -2,7 +2,7 @@ import wsgiref.handlers
 
 from google.appengine.api import channel
 from google.appengine.api.labs import taskqueue
-from google.appengine.api import users, memcache
+from google.appengine.api import users
 from google.appengine.ext.webapp import template
 from google.appengine.ext import deferred
 from google.appengine.ext import db
@@ -630,17 +630,6 @@ class JSONHandler(webapp.RequestHandler):
 #            subject="there@ bounce message",
 #            body="Sorry, it doesn't look like anyone is signed in as staff right now.")
 
-class FetchUsersHandler(webapp.RequestHandler):
-  def get(self):
-      resp = urlfetch.fetch('http://hd-domain-hrd.appspot.com/users',
-                            deadline=20, follow_redirects=False)
-      if resp.status_code == 200:
-          memcache.set('usernames', resp.content, 3600*2)
-          self.response.out.write("<h1>200 OK - Usernames set</h1>")
-      else:
-          self.response.out.write("500 - Something broke")
-
-
 """ Handler for making RFID API call to signup app. """
 class RfidApiHandler(webapp.RequestHandler):
   """ key: The RFID key of the user. """
@@ -698,7 +687,6 @@ app = webapp.WSGIApplication([
     ('/fast', FastHandler),
     ('/signin', SigninHandler),
     ('/staff', StaffHandler),
-    ('/cron/fetchusers', FetchUsersHandler),
     ('/api/doorlog', DoorLogHandler),
     ('/api/charge', ChargeHandler),
     ('/sstats/?', StatHandler),
