@@ -267,10 +267,11 @@ function ok() {
 
       if (data.nomember) {
          $('#error_title').html('<b>Access Denied</b>');
-         $('#error_message').html('You are not a member. ' +
-                                  '<a href="http://signup.hackerdojo.com">' +
-                                  'Click here</a> to sign up, or reactivate' +
-                                  ' your account.');
+         $('#error_message').html('You are not an active member. ' +
+                                  'Please sign up, or reactivate ' +
+                                  'your account. If you believe this ' +
+                                  'message is in error, check the email ' +
+                                  'address that you entered.');
          $('#error').fadeIn();
       } else if (data.status == "upgrade") {
         $('#upgrade').fadeIn();
