@@ -1,28 +1,20 @@
-import wsgiref.handlers
 
 from google.appengine.api import channel
-from google.appengine.api.labs import taskqueue
 from google.appengine.api import users
 from google.appengine.ext.webapp import template
 from google.appengine.ext import deferred
 from google.appengine.ext import db
 from google.appengine.api import urlfetch
-from google.appengine.api import mail
-from google.appengine.ext.webapp.util import login_required
-from datetime import tzinfo, datetime, timedelta
-import urllib, hashlib, time, random
-import logging, email
+from datetime import datetime, timedelta
+import urllib, hashlib, random
+import logging
 from google.appengine.ext import webapp
-from google.appengine.ext.webapp.mail_handlers import InboundMailHandler
-from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.api import mail
 import json
 import math
-import pprint
 import string
 import util
 from util import Pacific
-import os
 from quix.pay.gateway.authorizenet import AimGateway
 from quix.pay.transaction import CreditCard
 #disabled to disable credit card processing
@@ -154,7 +146,7 @@ class Signin(db.Model):
             to=staffer.email,
             subject="Are you still staffing the Dojo?",
             body="You were automatically signed out after "+ str(MAX_SIGNIN_TIME/60/60) + " hours.\n\n"+
-                 "You can always sign-in again at http://hackerdojo-signin.appspot.com/ if you are still here.\n\n")
+                 "You can always sign-in again at https://hackerdojo-signin.appspot.com/ if you are still here.\n\n")
     return staffers
 
   @classmethod
@@ -174,7 +166,7 @@ class Signin(db.Model):
     if not '@' in email:
       raise EmailError("malformed e-mail")
     hash = hashlib.md5(email).hexdigest()
-    image = 'http://0.gravatar.com/avatar/%s' % hash
+    image = 'https://0.gravatar.com/avatar/%s' % hash
     name = string.capwords(email.split('@')[0].replace('.', ' '))
     # prevents double signin...
     previous_signin = db.GqlQuery("SELECT * FROM Signin WHERE email = '%s' AND active = true" % email).get()
@@ -223,7 +215,7 @@ class SigninHandler(webapp.RequestHandler):
       # Perform an API request for the signup application.
       response = {}
       if type == "Member":
-        base_url = "http://hd-signup-hrd.appspot.com/api/v1/signin"
+        base_url = "https://hd-signup-hrd.appspot.com/api/v1/signin"
         query_str = urllib.urlencode({"email": email})
         result = urlfetch.fetch(base_url, method=urlfetch.POST,
                                 payload=query_str, follow_redirects=False)
@@ -547,7 +539,7 @@ class DoorLogHandler(webapp.RequestHandler):
           # Sign in the user, if the front door opened for them.
           if (self.request.get("door") == "599main" and \
               self.request.get("status") == "granted"):
-            base_url = "http://hd-signup-hrd.appspot.com/api/v1/rfid"
+            base_url = "https://hd-signup-hrd.appspot.com/api/v1/rfid"
             params = {"id": self.request.get("rfid_tag")}
             params = urllib.urlencode(params)
             response = urlfetch.Fetch(base_url, method=urlfetch.POST,
@@ -634,7 +626,7 @@ class JSONHandler(webapp.RequestHandler):
 class RfidApiHandler(webapp.RequestHandler):
   """ key: The RFID key of the user. """
   def get(self, key):
-    base_url = "http://hd-signup-hrd.appspot.com/api/v1/rfid"
+    base_url = "https://hd-signup-hrd.appspot.com/api/v1/rfid"
     query_str = urllib.urlencode({"id": key})
     response = urlfetch.fetch(base_url, method=urlfetch.POST,
                               payload=query_str, follow_redirects=False)
@@ -677,8 +669,8 @@ class RfidApiHandler(webapp.RequestHandler):
 
 
 app = webapp.WSGIApplication([
-        ('/', MainHandler),
-        ('/cc', CCHandler),
+    ('/', MainHandler),
+    ('/cc', CCHandler),
         #(r'^/_ah/mail/there.*', MailHandler),
     ('/eventmode', EventModeHandler),
     ('/report/donations', DonationReportHandler),
