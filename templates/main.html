@@ -32,7 +32,7 @@
 	<iframe style="border:none" border=0 width=100% src="https://hackerdojo.pbworks.com/api_v2/op/GetPage/page/Policies/_type/html" height=80%>
 	</iframe>
 	<center>
-		<input style="margin:1em" type=button onclick="thanks();" value="I agree to the terms above" />
+		<input style="margin:1em" type=button onclick="thanks('Guest', 'Welcome to Hacker Dojo!');" value="I agree to the terms above" />
 	</center>
 </div>
 
@@ -168,12 +168,12 @@
   <form id="ajax_form" onsubmit="return false;">
   {% if current_event %}
     <table><tr>
-    <td><img style="margin:1.5em" src="{{current_event.logo_url}}" width="455" height="161" /></td>
+    <td><img style="margin:1.5em" src="{{current_event.logo_url}}" width="400" /></td>
     <td>at</td>
-    <td><img style="margin:1.5em" src="/static/logo.png" width="455" height="161" /></td>
+    <td><img style="margin:1.5em" src="/static/logo.png" width="400" /></td>
     </tr></table>
   {% else %}
-    <img style="margin:1.5em" src="/static/logo.png" width="690" height="244" />
+    <img style="margin:1.5em" src="/static/logo.png" width="400" />
   {% endif %}
 
   <h1 style="margin:1.5em">Please Sign In</h1>
