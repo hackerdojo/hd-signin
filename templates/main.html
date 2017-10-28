@@ -1,204 +1,163 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <title>Sign in</title>
-  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-  <script type="text/javascript" src="/static/md5.js"></script>
-  <script type="text/javascript" src="/static/signin.js?v=14"></script>
-  <!-- Bootstrap CSS -->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
-  <!-- Bootstrap JS -->
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
-  <link rel="stylesheet" type="text/css" href="/static/signin.css?v=14" />
+    <title>Hacker Dojo Sign in</title>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/md5.js"></script>
+    <script type="text/javascript" src="/static/signin.js?v=15"></script>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <!-- Bootstrap JS -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    <style type="text/css">
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%
+        }
+
+        body {
+            font-family: sans-serif;
+            font-size: 180%;
+        }
+
+        input {
+            font-size: 130%;
+            margin: .5em
+        }
+
+        .corners {
+            -webkit-border-radius: 8px;
+            -moz-border-radius: 8px;
+            border-radius: 8px;
+        }
+
+        .domainbenefits li {
+            margin-bottom: 16px
+        }
+    </style>
 </head>
 <body id="body">
 
-{% if today_count_signigicant %}
-<div style="text-align:center; font-size:18px; position:absolute; background:#f9f9f9; top:12px; right:12px; border:1px solid #ccc; padding:.5em; -webkit-border-radius: 7px; -moz-border-radius: 7px; border-radius: 7px;" id="banner">
-	<span id="todaycount">{{today_count}}</span> sign-ins today
-	<br />
-	~ {{day}} ~
-</div>
+{% if today_count_significant %}
+    <div style="text-align:center; font-size:18px; position:absolute; background:#f9f9f9; top:12px; right:12px; border:1px solid #ccc; padding:.5em; -webkit-border-radius: 7px; -moz-border-radius: 7px; border-radius: 7px;"
+         id="banner">
+        <span id="todaycount">{{ today_count }}</span> sign-ins today
+        <br/>
+        ~ {{ day }} ~
+    </div>
 {% endif %}
 
-<div id="auto" class="corners" style="padding:1em; display:none; position:absolute; z-index:20; top:-12px; right:-12px; width:20%; border:2px solid #90900f; background:#ffffa0 ">
-	<center>
-		Auto Sign In 
-		<img id="count" src="/static/countdown.gif" style="margin:1em" align="absmiddle" />
-	</center>
+<div id="tos" class="corners"
+     style="display:none; position:absolute; z-index:2; top:10%; left:10%; width:80%; height:80%; border:2px solid black; background:white ">
+    <iframe style="border:none" border=0 width=100%
+            src="https://hackerdojo.pbworks.com/api_v2/op/GetPage/page/Policies/_type/html" height=80%>
+    </iframe>
+    <center>
+        <input style="margin:1em" type=button onclick="thanks('Guest', 'Welcome to Hacker Dojo!');"
+               value="I agree to the terms above"/>
+    </center>
 </div>
 
-<div id="tos" class="corners" style="display:none; position:absolute; z-index:2; top:10%; left:10%; width:80%; height:80%; border:2px solid black; background:white ">
-	<iframe style="border:none" border=0 width=100% src="https://hackerdojo.pbworks.com/api_v2/op/GetPage/page/Policies/_type/html" height=80%>
-	</iframe>
-	<center>
-		<input style="margin:1em" type=button onclick="thanks('Guest', 'Welcome to Hacker Dojo!');" value="I agree to the terms above" />
-	</center>
+<div id="ajaxloading" class="corners"
+     style="padding:3em; display:none; position:absolute; z-index:2; top:35%; left:35%; width:20%; border:2px solid #90900f; background:#ffffa0 ">
+    <center>
+        Please Wait
+        <img src="/static/spin1.gif" style="margin:1em" width="32" height="32" align="absmiddle"/>
+    </center>
 </div>
 
-<div id="rfidwelcome" class="corners" style="display:none; position:absolute; z-index:2; top:05%; left:15%; width:70%; border:2px solid black; background:#dbf2dc; padding:1em">
-	<h2 style="margin:0">
-		Welcome
-		<span class="rfidname">Name</span>
-	</h2>
-
-	<p style="font-size:24px; margin-bottom:1em">Please choose a sign-in option.</p>
-
-	<table width="80%" align="center" border="0" cellspacing="0" cellpadding="0" id="rfidtable">
-		<tr class="hrow" onclick="go('Anonymous')">
-			<td>&nbsp;
-			</td>
-			<td width="84">
-				<img height="84" width="84" src="/static/anon.png">
-			</td>
-			<td>
-				<h3 style="margin:0">Anonymous</h3>
-			</td>
-			<td>
-				<input type="button" value="1" style="border:2px solid black" />
-			</td>
-			<td>&nbsp;
-			</td>
-		</tr>
-		<tr class="hrow" onclick="go('Member')">
-			<td>&nbsp;
-			</td>
-			<td>
-				<img height="80" width="80" src="/static/anon.png" class="rfidpic" style="border:2px solid orange">
-			</td>
-			<td>
-				<h3 style="margin:0">
-					<span class="rfidname">Name</span>
-				</h3>
-				<h4 style="margin:0">Member</h4>
-			</td>
-			<td>
-				<input type="button" value="2" style="border:2px solid orange" />
-			</td>
-			<td>&nbsp;
-			</td>
-		</tr>
-		<tr class=hrow onclick="cancel()">
-			<td>&nbsp;
-			</td>
-			<td>
-				<img height="84" width="84" src="/static/x.png">
-			</td>
-			<td>
-				<h3 style="margin:0">Cancel</h3>
-			</td>
-			<td>
-				<input type="button" value="4" style="border:2px solid red" />
-			</td>
-			<td>&nbsp;
-			</td>
-		</tr>
-	</table>
-</div>
-
-<div id="ajaxloading" class="corners" style="padding:3em; display:none; position:absolute; z-index:2; top:35%; left:35%; width:20%; border:2px solid #90900f; background:#ffffa0 ">
-	<center>
-		Please Wait
-		<img src="/static/spin1.gif" style="margin:1em" width="32" height="32" align="absmiddle" />
-	</center>
-</div>
-
-<div id="thanks" class="corners" style="padding:2em; display:none; position:absolute; z-index:2; top:35%; left:29%; width:35%; border:2px solid #227b1b; background:#b5e5b2 ">
-  <img src="/static/check.png" height="130" width="130" align="left" style="margin-right:1em">
-	<p style="text-align:center" id="thanksmessage">Thank You</p>
+<div id="thanks" class="corners"
+     style="padding:2em; display:none; position:absolute; z-index:2; top:35%; left:29%; width:35%; border:2px solid #227b1b; background:#b5e5b2 ">
+    <img src="/static/check.png" height="130" width="130" align="left" style="margin-right:1em">
+    <p style="text-align:center" id="thanksmessage">Thank You</p>
 </div>
 
 <div id="error" class="corners"
-    style="padding: 4em; display: none; color: black; position: absolute;
+     style="padding: 4em; display: none; color: black; position: absolute;
            z-index: 2; top: 35%; left: 25%; width: 40%; border: 2px solid red;
            background: #faa;">
-    <h1><center id="error_title">Error</center></h1>
+    <h1>
+        <center id="error_title">Error</center>
+    </h1>
     <h3><p style="text-align: center" id="error_message">&nbsp;</p></h3>
 </div>
 
 <div id="upgrade" class="corners"
-    style="padding: 4em; display: none; color: black; position: absolute;
+     style="padding: 4em; display: none; color: black; position: absolute;
            z-index: 2; top: 35%; left: 25%; width: 40%;
            border: 2px solid #7786CC; background: #95A8FF;">
-    <h1><center id="upgrade_title">Out of Visits</center></h1>
+    <h1>
+        <center id="upgrade_title">Out of Visits</center>
+    </h1>
     <h3><p style="text-align: center" id="upgrade_message">
         You have no more visits remaining this month. If you want more, you must
         upgrade your plan.
     </p></h3>
     <center><a href="https://signup.hackerdojo.com/change_plan" role="button"
-        class="btn btn-success btn-lg btn-block"
-        style="margin-top: 2em">Upgrade</a></center>
+               class="btn btn-success btn-lg btn-block"
+               style="margin-top: 2em">Upgrade</a></center>
 </div>
 
 
-<div id="ccthanks" class="corners" style="padding:2em; display:none; position:absolute; z-index:2; top:35%; left:29%; width:35%; border:2px solid #227b1b; background:#b5e5b2 ">
-  <img src="/static/check.png" height="130" width="130" align="left" style="margin-right:1em">
-      <p style="text-align:center; font-size:180%" id="ccamount">&nbsp;</p>
-      <p style="text-align:center" >THANK YOU</p>
-	<p style="text-align:center; font-weight:normal; font-size:85%" id="ccthanksmessage">&nbsp;</p>
+<div id="ccthanks" class="corners"
+     style="padding:2em; display:none; position:absolute; z-index:2; top:35%; left:29%; width:35%; border:2px solid #227b1b; background:#b5e5b2 ">
+    <img src="/static/check.png" height="130" width="130" align="left" style="margin-right:1em">
+    <p style="text-align:center; font-size:180%" id="ccamount">&nbsp;</p>
+    <p style="text-align:center">THANK YOU</p>
+    <p style="text-align:center; font-weight:normal; font-size:85%" id="ccthanksmessage">&nbsp;</p>
 </div>
 
-<div id="dojodomain" class="corners" style="padding:2em; display:none; color:black; position:absolute; z-index:2; top:15%; left:15%; width:60%; border:2px solid red; background:#faa ">
-  <h2 style="margin-top:0">Please use your @hackerdojo.com address</h2>
-  <ul class="domainbenefits">
-    <li>Every member gets a <code>@hackerdojo.com</code> account
-    <li>Your <code>@hackerdojo.com</code> account is used for all kinds of things at the Dojo: e-mail, RFID keys, event hosting, signin, kudos, etc.
-    <li>You probably already have one in the form of <code>firstname.lastname@hackerdojo.com</code>
-    <li>If you need one, you can get one at <nobr><code>https://signup.hackerdojo.com/upgrade/needaccount</code></nobr>
-  </ul>
-	<p>
-		<a href="#" onclick="$('#dojodomain').fadeOut(); $('#em').focus();">OK</a>
-	</p>
+<div id="dojodomain" class="corners"
+     style="padding:2em; display:none; color:black; position:absolute; z-index:2; top:15%; left:15%; width:60%; border:2px solid red; background:#faa ">
+    <h2 style="margin-top:0">Please use your @hackerdojo.com address</h2>
+    <ul class="domainbenefits">
+        <li>Every member gets a <code>@hackerdojo.com</code> account
+        <li>Your <code>@hackerdojo.com</code> account is used for all kinds of things at the Dojo: e-mail, RFID keys,
+            event hosting, signin, kudos, etc.
+        <li>You probably already have one in the form of <code>firstname.lastname@hackerdojo.com</code>
+        <li>If you need one, you can get one at
+            <nobr><code>https://signup.hackerdojo.com/upgrade/needaccount</code></nobr>
+    </ul>
+    <p>
+        <a href="#" onclick="$('#dojodomain').fadeOut(); $('#em').focus();">OK</a>
+    </p>
 </div>
 
-<div id="privacy" class="corners" style="padding:1em; display:none; position:absolute; z-index:2; top:25%; left:25%; width:40%; border:2px solid black; background:#dbf2dc; font-size:80% ">
-	<h2>E-mail Privacy</h2>
-	<p>The Dojo will not sell, rent, or give out your e-mail address to
-		ANYONE.</p>
-	<p>The Dojo may send you a "welcome e-mail" telling you about
-		membership, and we may contact you in the future about interesting
-		events and other happenings (which of course, you can opt-out of).</p>
-	<p>We hate spam & we're not evil ;)</p>
-	<p>
-		<a href="#" onclick="$('#privacy').fadeOut(); $('#em').focus();">Close</a>
-	</p>
+<div id="privacy" class="corners"
+     style="padding:1em; display:none; position:absolute; z-index:2; top:25%; left:25%; width:40%; border:2px solid black; background:#dbf2dc; font-size:80% ">
+    <h2>E-mail Privacy</h2>
+    <p>The Dojo will not sell, rent, or give out your e-mail address to
+        ANYONE.</p>
+    <p>The Dojo may send you a "welcome e-mail" telling you about
+        membership, and we may contact you in the future about interesting
+        events and other happenings (which of course, you can opt-out of).</p>
+    <p>We hate spam & we're not evil ;)</p>
+    <p>
+        <a href="#" onclick="$('#privacy').fadeOut(); $('#em').focus();">Close</a>
+    </p>
 </div>
 
 <center>
-  <form id="ajax_form" onsubmit="return false;">
-  {% if current_event %}
-    <table><tr>
-    <td><img style="margin:1.5em" src="{{current_event.logo_url}}" width="400" /></td>
-    <td>at</td>
-    <td><img style="margin:1.5em" src="/static/logo.png" width="400" /></td>
-    </tr></table>
-  {% else %}
-    <img style="margin:1.5em" src="/static/logo.png" width="400" />
-  {% endif %}
+    <form id="ajax_form" onsubmit="return false;">
+        <img style="margin:1.5em" src="/static/logo.png" width="400"/>
 
-  <h1 style="margin:1.5em">Please Sign In</h1>
-
-  {% if current_event.custom_html %}
-    {{current_event.custom_html}}
-    <br>
-    <input type="button" value="Event Attendee" onclick="go('Event')" />
-    <input type="button" value="Hacker Dojo Member" onclick="clickmember()" />
-  {% else %}
-  E-mail:
-    <input id="em" type="text" name="email" autocomplete="off" >
-    <a style="color:green; font-size:9px" href="#" onclick="$('#privacy').fadeIn();">E-mail Privacy</a>
-    <br>
-    <input type="button" value="Member" onclick="go('Member')" />
-    <input type="button" value="Guest" onclick="go('Guest')" />
-    <input type="button" value="Event Attendee" onclick="go('Event')" />
-  {% endif %}
-  <input id="ttt" type="hidden" name="type" value="" />
-  </form>
+        <h1 style="margin:1.5em">Please Sign In</h1>
+        E-mail:
+        <input id="em" type="text" name="email" autocomplete="off">
+        <a style="color:green; font-size:9px" href="#" onclick="$('#privacy').fadeIn();">E-mail Privacy</a>
+        <br>
+        <input type="button" value="Member" onclick="go('Member')"/>
+        <input type="button" value="Guest" onclick="go('Guest')"/>
+        <input type="button" value="Event Attendee" onclick="go('Event')"/>
+        <input id="ttt" type="hidden" name="type" value=""/>
+    </form>
 </center>
 
 <audio autobuffer nocontrols>
-<source src='/static/money.wav'>
+    <source src='/static/money.mp3'>
 </audio>
-  
+
 </body>
 </html>
