@@ -5,7 +5,6 @@ import string
 import urllib
 from datetime import datetime
 
-from google.appengine.api import channel
 from google.appengine.api import urlfetch
 from google.appengine.api import users
 from google.appengine.ext import db
@@ -91,9 +90,6 @@ class SigninRecord(db.Model):
         else:
             rec = SigninRecord(email=email, first_signin=when, last_signin=when, signins=1)
         rec.put()
-        for ch in (range(1, 3)):
-            channel.send_message("CH" + str(ch), json.dumps(
-                {"email": email, "first": str(rec.first_signin), "last": str(rec.last_signin), "count": rec.signins}))
         return rec
 
 
